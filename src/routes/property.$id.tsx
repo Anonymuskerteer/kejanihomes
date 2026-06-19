@@ -95,7 +95,7 @@ function PropertyPage() {
             </div>
           </div>
           <div className="grid grid-cols-3 gap-3 md:grid-cols-2">
-            {property.gallery.map((g, i) => (
+            {property.gallery.map((g: string, i: number) => (
               <button
                 key={i}
                 onClick={() => setActive(i)}
@@ -122,7 +122,7 @@ function PropertyPage() {
 
             <Block title="Amenities">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {property.amenities.map((a) => (
+                {property.amenities.map((a: string) => (
                   <div key={a} className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-sm">
                     <CheckCircle2 className="h-4 w-4 text-primary" /> {a}
                   </div>

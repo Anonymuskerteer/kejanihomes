@@ -119,7 +119,7 @@ function Hero() {
               <MapPin className="h-4 w-4 text-primary" /> Anywhere in Kenya
             </div>
             <Button asChild size="lg" className="h-12 px-6 text-base shadow-soft">
-              <Link to="/browse" search={{ q } as never}>
+              <Link to="/browse">
                 Search homes <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>

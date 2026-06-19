@@ -9,10 +9,10 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PropertyCard } from "@/components/property-card";
-import { formatKES, getProperty, PROPERTIES } from "@/lib/properties";
+import { formatKES, getProperty, PROPERTIES, type Property } from "@/lib/properties";
 
 export const Route = createFileRoute("/property/$id")({
-  loader: ({ params }) => {
+  loader: ({ params }): { property: Property } => {
     const p = getProperty(params.id);
     if (!p) throw notFound();
     return { property: p };

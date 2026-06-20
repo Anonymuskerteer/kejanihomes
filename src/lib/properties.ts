@@ -98,7 +98,7 @@ export interface PropertyRow {
   images: string[];
   contact_phone: string | null;
   contact_email: string | null;
-  status: "pending" | "approved" | "rejected";
+  status: string; // "pending" | "approved" | "rejected"
   rejection_reason: string | null;
   is_featured: boolean;
   views_count: number;

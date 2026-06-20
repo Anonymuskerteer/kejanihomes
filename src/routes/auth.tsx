@@ -1,19 +1,65 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { z } from "zod";
+import { useState } from "react";
+import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+const searchSchema = z.object({
+  mode: z.enum(["signin", "signup"]).optional(),
+  role: z.enum(["tenant", "landlord"]).optional(),
+});
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: searchSchema,
   head: () => ({ meta: [{ title: "Sign in — Kejani Homes" }] }),
   component: AuthPage,
 });
 
 function AuthPage() {
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [role, setRole] = useState<"tenant" | "landlord">("tenant");
+  const search = useSearch({ from: "/auth" });
+  const navigate = useNavigate();
+  const [mode, setMode] = useState<"signin" | "signup">(search.mode ?? "signin");
+  const [role, setRole] = useState<"tenant" | "landlord">(search.role ?? "tenant");
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      if (mode === "signin") {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast.success("Welcome back!");
+        navigate({ to: "/dashboard" });
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: fullName, phone, role },
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+          },
+        });
+        if (error) throw error;
+        toast.success("Account created — you're signed in.");
+        navigate({ to: role === "landlord" ? "/dashboard" : "/browse" });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Authentication failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -21,48 +67,138 @@ function AuthPage() {
         <div className="grid w-full max-w-5xl overflow-hidden rounded-3xl border border-border bg-card shadow-card md:grid-cols-2">
           <div className="hidden bg-primary p-10 text-primary-foreground md:flex md:flex-col md:justify-between">
             <div>
-              <Link to="/" className="font-display text-xl font-bold">Kejani<span className="text-accent">Homes</span></Link>
-              <h2 className="mt-10 font-display text-3xl font-bold leading-tight">Welcome to Kenya's friendliest housing platform.</h2>
-              <p className="mt-3 text-sm text-primary-foreground/80">Save your favourite homes, contact landlords directly, and get notified when new homes match your taste.</p>
+              <Link to="/" className="font-display text-xl font-bold">
+                Kejani<span className="text-accent">Homes</span>
+              </Link>
+              <h2 className="mt-10 font-display text-3xl font-bold leading-tight">
+                {role === "landlord"
+                  ? "Reach thousands of tenants across Kenya."
+                  : "Find a home that feels like kejani."}
+              </h2>
+              <p className="mt-3 text-sm text-primary-foreground/80">
+                {role === "landlord"
+                  ? "List your units, manage enquiries and grow your rental business from one dashboard."
+                  : "Save your favourite homes, contact landlords directly and read honest reviews from real tenants."}
+              </p>
             </div>
-            <p className="text-xs text-primary-foreground/60">Demo only — connect Lovable Cloud to enable real authentication.</p>
+            <p className="text-xs text-primary-foreground/70">
+              Built for Mwea and serving all 47 counties.
+            </p>
           </div>
 
           <div className="p-8 md:p-10">
             <div className="inline-flex rounded-xl bg-secondary p-1 text-sm font-medium">
-              <button onClick={() => setMode("signin")} className={`rounded-lg px-4 py-1.5 ${mode === "signin" ? "bg-background shadow" : "text-muted-foreground"}`}>Sign in</button>
-              <button onClick={() => setMode("signup")} className={`rounded-lg px-4 py-1.5 ${mode === "signup" ? "bg-background shadow" : "text-muted-foreground"}`}>Create account</button>
+              <button
+                onClick={() => setMode("signin")}
+                className={`rounded-lg px-4 py-1.5 ${mode === "signin" ? "bg-background shadow" : "text-muted-foreground"}`}
+              >
+                Sign in
+              </button>
+              <button
+                onClick={() => setMode("signup")}
+                className={`rounded-lg px-4 py-1.5 ${mode === "signup" ? "bg-background shadow" : "text-muted-foreground"}`}
+              >
+                Create account
+              </button>
             </div>
-            <h1 className="mt-6 font-display text-2xl font-bold">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
-            <p className="text-sm text-muted-foreground">{mode === "signin" ? "Sign in to view contacts and save homes." : "Join Kejani Homes in under a minute."}</p>
+            <h1 className="mt-6 font-display text-2xl font-bold">
+              {mode === "signin" ? "Welcome back" : "Create your account"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {mode === "signin"
+                ? "Sign in to view contacts and save homes."
+                : "Join Kejani Homes in under a minute."}
+            </p>
 
-            <form className="mt-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
+            <form className="mt-6 space-y-4" onSubmit={submit}>
               {mode === "signup" && (
-                <div className="space-y-1.5"><Label>Full name</Label><Input placeholder="Achieng Otieno" /></div>
+                <>
+                  <div className="space-y-1.5">
+                    <Label>Full name</Label>
+                    <Input
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Achieng Otieno"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Phone (optional)</Label>
+                    <Input
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+2547…"
+                    />
+                  </div>
+                </>
               )}
-              <div className="space-y-1.5"><Label>Email</Label><Input type="email" placeholder="you@example.com" /></div>
-              <div className="space-y-1.5"><Label>Password</Label><Input type="password" placeholder="••••••••" /></div>
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input
+                  required
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Password</Label>
+                <Input
+                  required
+                  type="password"
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                />
+              </div>
 
               {mode === "signup" && (
                 <div className="space-y-1.5">
                   <Label>I am a</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {(["tenant", "landlord"] as const).map((r) => (
-                      <button type="button" key={r} onClick={() => setRole(r)}
-                        className={`rounded-xl border px-4 py-3 text-left text-sm transition ${role === r ? "border-primary bg-primary-soft" : "border-border hover:border-primary"}`}>
-                        <div className="font-semibold capitalize">{r === "landlord" ? "Landlord / Agent" : "Tenant"}</div>
-                        <div className="text-xs text-muted-foreground">{r === "landlord" ? "List and manage properties" : "Search and save homes"}</div>
+                      <button
+                        type="button"
+                        key={r}
+                        onClick={() => setRole(r)}
+                        className={`rounded-xl border px-4 py-3 text-left text-sm transition ${role === r ? "border-primary bg-primary-soft" : "border-border hover:border-primary"}`}
+                      >
+                        <div className="font-semibold capitalize">
+                          {r === "landlord" ? "Landlord / Agent" : "Tenant"}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {r === "landlord"
+                            ? "List and manage properties"
+                            : "Search and save homes"}
+                        </div>
                       </button>
                     ))}
                   </div>
                 </div>
               )}
 
-              <Button className="w-full" size="lg" type="submit">
-                {mode === "signin" ? "Sign in" : "Create account"}
+              <Button className="w-full" size="lg" type="submit" disabled={busy}>
+                {busy
+                  ? "Please wait…"
+                  : mode === "signin"
+                    ? "Sign in"
+                    : "Create account"}
               </Button>
               {mode === "signin" && (
-                <button type="button" className="text-xs text-primary hover:underline">Forgot password?</button>
+                <div className="flex items-center justify-between text-xs">
+                  <Link to="/forgot-password" className="text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setMode("signup")}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    Need an account?
+                  </button>
+                </div>
               )}
             </form>
           </div>

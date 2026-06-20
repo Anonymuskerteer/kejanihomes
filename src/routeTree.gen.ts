@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -24,6 +26,11 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ListPropertyRoute = ListPropertyRouteImport.update({
   id: '/list-property',
   path: '/list-property',
@@ -32,6 +39,11 @@ const ListPropertyRoute = ListPropertyRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -70,8 +82,10 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
@@ -81,8 +95,10 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
@@ -93,8 +109,10 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
@@ -106,8 +124,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/reset-password'
     | '/saved'
     | '/property/$id'
     | '/api/public/seed-admin'
@@ -117,8 +137,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/reset-password'
     | '/saved'
     | '/property/$id'
     | '/api/public/seed-admin'
@@ -128,8 +150,10 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/dashboard'
+    | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/reset-password'
     | '/saved'
     | '/property/$id'
     | '/api/public/seed-admin'
@@ -140,8 +164,10 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   DashboardRoute: typeof DashboardRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   ListPropertyRoute: typeof ListPropertyRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SavedRoute: typeof SavedRoute
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
@@ -156,6 +182,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/list-property': {
       id: '/list-property'
       path: '/list-property'
@@ -168,6 +201,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -220,8 +260,10 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   DashboardRoute: DashboardRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   ListPropertyRoute: ListPropertyRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SavedRoute: SavedRoute,
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,

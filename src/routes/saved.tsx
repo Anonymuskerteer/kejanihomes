@@ -1,8 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { Heart } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { PropertyCard } from "@/components/property-card";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
+import type { PropertyRow } from "@/lib/properties";
 
 export const Route = createFileRoute("/saved")({
   head: () => ({ meta: [{ title: "Saved homes — Kejani Homes" }] }),
@@ -10,22 +15,50 @@ export const Route = createFileRoute("/saved")({
 });
 
 function SavedPage() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) navigate({ to: "/auth" });
+  }, [loading, user, navigate]);
+
+  const { data: saved = [], isLoading } = useQuery({
+    queryKey: ["saved", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<PropertyRow[]> => {
+      const { data, error } = await supabase
+        .from("saved_properties")
+        .select("properties(*)")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      return (data ?? [])
+        .map((r) => (r as { properties: PropertyRow | null }).properties)
+        .filter((p): p is PropertyRow => !!p);
+    },
+  });
+
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="container-page flex-1 py-16">
-        <h1 className="font-display text-3xl font-bold tracking-tight">Saved homes</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your wishlist will appear here once you sign in.</p>
-
-        <div className="mt-10 rounded-3xl border border-dashed border-border bg-card p-12 text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-primary"><Heart className="h-7 w-7" /></div>
-          <h2 className="mt-4 font-display text-xl font-semibold">No saved homes yet</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Tap the heart on any listing to save it for later.</p>
-          <div className="mt-6 flex justify-center gap-2">
-            <Button asChild><Link to="/browse">Browse homes</Link></Button>
-            <Button asChild variant="outline"><Link to="/auth">Sign in</Link></Button>
-          </div>
+      <main className="container-page flex-1 py-10">
+        <div className="flex items-center gap-3">
+          <Heart className="h-6 w-6 text-primary" />
+          <h1 className="font-display text-3xl font-bold tracking-tight">Saved homes</h1>
         </div>
+        <p className="mt-1 text-sm text-muted-foreground">Your shortlist for future viewings.</p>
+
+        {!user || isLoading ? (
+          <p className="mt-10 text-center text-sm text-muted-foreground">Loading…</p>
+        ) : saved.length === 0 ? (
+          <div className="mt-10 rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+            <p className="text-sm text-muted-foreground">You haven't saved any homes yet.</p>
+            <Link to="/browse" className="mt-3 inline-block text-sm font-semibold text-primary underline">Browse homes →</Link>
+          </div>
+        ) : (
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {saved.map((p) => <PropertyCard key={p.id} property={p} />)}
+          </div>
+        )}
       </main>
       <SiteFooter />
     </div>

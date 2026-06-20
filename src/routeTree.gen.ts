@@ -17,6 +17,7 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
+import { Route as ApiSeedAdminRouteImport } from './routes/api/seed-admin'
 
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
@@ -58,6 +59,11 @@ const PropertyIdRoute = PropertyIdRouteImport.update({
   path: '/property/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSeedAdminRoute = ApiSeedAdminRouteImport.update({
+  id: '/api/seed-admin',
+  path: '/api/seed-admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
   '/saved': typeof SavedRoute
+  '/api/seed-admin': typeof ApiSeedAdminRoute
   '/property/$id': typeof PropertyIdRoute
 }
 export interface FileRoutesByTo {
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
   '/saved': typeof SavedRoute
+  '/api/seed-admin': typeof ApiSeedAdminRoute
   '/property/$id': typeof PropertyIdRoute
 }
 export interface FileRoutesById {
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
   '/saved': typeof SavedRoute
+  '/api/seed-admin': typeof ApiSeedAdminRoute
   '/property/$id': typeof PropertyIdRoute
 }
 export interface FileRouteTypes {
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/list-property'
     | '/saved'
+    | '/api/seed-admin'
     | '/property/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/list-property'
     | '/saved'
+    | '/api/seed-admin'
     | '/property/$id'
   id:
     | '__root__'
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/list-property'
     | '/saved'
+    | '/api/seed-admin'
     | '/property/$id'
   fileRoutesById: FileRoutesById
 }
@@ -131,6 +143,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   ListPropertyRoute: typeof ListPropertyRoute
   SavedRoute: typeof SavedRoute
+  ApiSeedAdminRoute: typeof ApiSeedAdminRoute
   PropertyIdRoute: typeof PropertyIdRoute
 }
 
@@ -192,6 +205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/seed-admin': {
+      id: '/api/seed-admin'
+      path: '/api/seed-admin'
+      fullPath: '/api/seed-admin'
+      preLoaderRoute: typeof ApiSeedAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -203,6 +223,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   ListPropertyRoute: ListPropertyRoute,
   SavedRoute: SavedRoute,
+  ApiSeedAdminRoute: ApiSeedAdminRoute,
   PropertyIdRoute: PropertyIdRoute,
 }
 export const routeTree = rootRouteImport

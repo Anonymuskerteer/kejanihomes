@@ -14,16 +14,224 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      properties: {
+        Row: {
+          address: string | null
+          amenities: string[]
+          area_sqm: number | null
+          bathrooms: number
+          bedrooms: number
+          contact_email: string | null
+          contact_phone: string | null
+          county: string
+          created_at: string
+          description: string
+          id: string
+          images: string[]
+          is_featured: boolean
+          latitude: number | null
+          listing_type: string
+          longitude: number | null
+          owner_id: string
+          price_kes: number
+          property_type: string
+          rejection_reason: string | null
+          status: string
+          title: string
+          town: string
+          updated_at: string
+          views_count: number
+        }
+        Insert: {
+          address?: string | null
+          amenities?: string[]
+          area_sqm?: number | null
+          bathrooms?: number
+          bedrooms?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          county: string
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean
+          latitude?: number | null
+          listing_type?: string
+          longitude?: number | null
+          owner_id: string
+          price_kes: number
+          property_type: string
+          rejection_reason?: string | null
+          status?: string
+          title: string
+          town: string
+          updated_at?: string
+          views_count?: number
+        }
+        Update: {
+          address?: string | null
+          amenities?: string[]
+          area_sqm?: number | null
+          bathrooms?: number
+          bedrooms?: number
+          contact_email?: string | null
+          contact_phone?: string | null
+          county?: string
+          created_at?: string
+          description?: string
+          id?: string
+          images?: string[]
+          is_featured?: boolean
+          latitude?: number | null
+          listing_type?: string
+          longitude?: number | null
+          owner_id?: string
+          price_kes?: number
+          property_type?: string
+          rejection_reason?: string | null
+          status?: string
+          title?: string
+          town?: string
+          updated_at?: string
+          views_count?: number
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          photos: string[]
+          property_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          photos?: string[]
+          property_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          photos?: string[]
+          property_id?: string
+          rating?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_properties: {
+        Row: {
+          created_at: string
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_properties_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "landlord" | "tenant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +358,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "landlord", "tenant"],
+    },
   },
 } as const

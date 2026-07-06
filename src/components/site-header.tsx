@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Home, Heart, Menu, Plus, User, LayoutDashboard, LogOut } from "lucide-react";
+import { Home, Heart, Menu, Plus, User, LayoutDashboard, LogOut, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +29,7 @@ export function SiteHeader() {
   };
 
   const isLandlord = role === "landlord" || role === "admin";
+  const isTenant = !!user && !isLandlord;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
@@ -43,10 +44,19 @@ export function SiteHeader() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link to="/" {...navLinkProps} activeOptions={{ exact: true }}>Home</Link>
-          <Link to="/browse" {...navLinkProps}>Browse</Link>
-          {user && !isLandlord && <Link to="/saved" {...navLinkProps}>Saved</Link>}
-          <Link to="/how-it-works" {...navLinkProps}>How it works</Link>
+          {isTenant ? (
+            <>
+              <Link to="/browse" {...navLinkProps}><Search className="mr-1 inline h-4 w-4" />Browse properties</Link>
+              <Link to="/wishlist" {...navLinkProps}><Heart className="mr-1 inline h-4 w-4" />Wishlist</Link>
+              <Link to="/profile" {...navLinkProps}><User className="mr-1 inline h-4 w-4" />Profile</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/" {...navLinkProps} activeOptions={{ exact: true }}>Home</Link>
+              <Link to="/browse" {...navLinkProps}>Browse</Link>
+              <Link to="/how-it-works" {...navLinkProps}>How it works</Link>
+            </>
+          )}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -69,13 +79,19 @@ export function SiteHeader() {
                     {role ?? "Account"}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
-                  </DropdownMenuItem>
-                  {!isLandlord && (
+                  {isLandlord ? (
                     <DropdownMenuItem asChild>
-                      <Link to="/saved"><Heart className="mr-2 h-4 w-4" />Saved homes</Link>
+                      <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
                     </DropdownMenuItem>
+                  ) : (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile"><User className="mr-2 h-4 w-4" />Profile</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/wishlist"><Heart className="mr-2 h-4 w-4" />Wishlist</Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={doSignOut}>
@@ -108,15 +124,22 @@ export function SiteHeader() {
       {open && (
         <div className="border-t border-border/60 md:hidden">
           <nav className="container-page flex flex-col gap-1 py-3">
-            <Link to="/" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Home</Link>
-            <Link to="/browse" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Browse</Link>
-            {user && (
-              <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Dashboard</Link>
+            {isTenant ? (
+              <>
+                <Link to="/browse" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary"><Search className="mr-2 inline h-4 w-4" />Browse properties</Link>
+                <Link to="/wishlist" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary"><Heart className="mr-2 inline h-4 w-4" />Wishlist</Link>
+                <Link to="/profile" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary"><User className="mr-2 inline h-4 w-4" />Profile</Link>
+              </>
+            ) : (
+              <>
+                <Link to="/" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Home</Link>
+                <Link to="/browse" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Browse</Link>
+                {isLandlord && (
+                  <Link to="/dashboard" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">Dashboard</Link>
+                )}
+                <Link to="/how-it-works" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">How it works</Link>
+              </>
             )}
-            {user && !isLandlord && (
-              <Link to="/saved" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary"><Heart className="mr-2 inline h-4 w-4" />Saved</Link>
-            )}
-            <Link to="/how-it-works" onClick={() => setOpen(false)} className="rounded-md px-2 py-2 text-sm hover:bg-secondary">How it works</Link>
             <div className="mt-2 flex gap-2">
               {user ? (
                 <Button onClick={() => { setOpen(false); doSignOut(); }} variant="outline" size="sm" className="flex-1">

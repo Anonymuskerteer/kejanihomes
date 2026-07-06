@@ -9,8 +9,10 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as ListPropertyRouteImport } from './routes/list-property'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -19,8 +21,14 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
+import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
 
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -29,6 +37,11 @@ const SavedRoute = SavedRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ListPropertyRoute = ListPropertyRouteImport.update({
@@ -71,6 +84,11 @@ const PropertyIdRoute = PropertyIdRouteImport.update({
   path: '/property/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSeedTenantRoute = ApiPublicSeedTenantRouteImport.update({
+  id: '/api/public/seed-tenant',
+  path: '/api/public/seed-tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
   id: '/api/public/seed-admin',
   path: '/api/public/seed-admin',
@@ -85,10 +103,13 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
+  '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
+  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -98,10 +119,13 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
+  '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
+  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -112,10 +136,13 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/list-property': typeof ListPropertyRoute
+  '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
+  '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
+  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,10 +154,13 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/profile'
     | '/reset-password'
     | '/saved'
+    | '/wishlist'
     | '/property/$id'
     | '/api/public/seed-admin'
+    | '/api/public/seed-tenant'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,10 +170,13 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/profile'
     | '/reset-password'
     | '/saved'
+    | '/wishlist'
     | '/property/$id'
     | '/api/public/seed-admin'
+    | '/api/public/seed-tenant'
   id:
     | '__root__'
     | '/'
@@ -153,10 +186,13 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/how-it-works'
     | '/list-property'
+    | '/profile'
     | '/reset-password'
     | '/saved'
+    | '/wishlist'
     | '/property/$id'
     | '/api/public/seed-admin'
+    | '/api/public/seed-tenant'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -167,14 +203,24 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   ListPropertyRoute: typeof ListPropertyRoute
+  ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SavedRoute: typeof SavedRoute
+  WishlistRoute: typeof WishlistRoute
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
+  ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -187,6 +233,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/list-property': {
@@ -245,6 +298,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/seed-tenant': {
+      id: '/api/public/seed-tenant'
+      path: '/api/public/seed-tenant'
+      fullPath: '/api/public/seed-tenant'
+      preLoaderRoute: typeof ApiPublicSeedTenantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/seed-admin': {
       id: '/api/public/seed-admin'
       path: '/api/public/seed-admin'
@@ -263,21 +323,14 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   ListPropertyRoute: ListPropertyRoute,
+  ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SavedRoute: SavedRoute,
+  WishlistRoute: WishlistRoute,
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
+  ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

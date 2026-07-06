@@ -34,6 +34,7 @@ const browseSearch = z.object({
   min: z.coerce.number().optional(),
   max: z.coerce.number().optional(),
   view: z.enum(["grid", "map"]).optional(),
+  sort: z.enum(["newest", "lowest", "highest", "rated"]).optional(),
 });
 
 export const Route = createFileRoute("/browse")({
@@ -56,6 +57,7 @@ function BrowsePage() {
     params.max ?? 200000,
   ]);
   const [view, setView] = useState<"grid" | "map">(params.view ?? "grid");
+  const [sort, setSort] = useState<"newest" | "lowest" | "highest" | "rated">(params.sort ?? "newest");
 
   const { data: properties = [], isLoading } = useQuery({
     queryKey: ["properties", "browse"],
@@ -70,9 +72,28 @@ function BrowsePage() {
     },
   });
 
+  const { data: ratingMap = {} } = useQuery({
+    queryKey: ["ratings-map"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("reviews").select("property_id, rating");
+      if (error) throw error;
+      const acc: Record<string, { total: number; count: number }> = {};
+      for (const r of data ?? []) {
+        const k = (r as { property_id: string }).property_id;
+        const rating = (r as { rating: number }).rating;
+        acc[k] ??= { total: 0, count: 0 };
+        acc[k].total += rating;
+        acc[k].count += 1;
+      }
+      const out: Record<string, { avg: number; count: number }> = {};
+      for (const k in acc) out[k] = { avg: acc[k].total / acc[k].count, count: acc[k].count };
+      return out;
+    },
+  });
+
   const filtered = useMemo(() => {
     const ql = q.toLowerCase().trim();
-    return properties.filter((p) => {
+    const arr = properties.filter((p) => {
       if (county !== "all" && p.county !== county) return false;
       if (type !== "all" && p.property_type !== type) return false;
       if (beds > 0 && p.bedrooms < beds) return false;
@@ -83,7 +104,13 @@ function BrowsePage() {
       }
       return true;
     });
-  }, [properties, q, county, type, beds, price]);
+    const sorted = [...arr];
+    if (sort === "lowest") sorted.sort((a, b) => a.price_kes - b.price_kes);
+    else if (sort === "highest") sorted.sort((a, b) => b.price_kes - a.price_kes);
+    else if (sort === "rated") sorted.sort((a, b) => (ratingMap[b.id]?.avg ?? 0) - (ratingMap[a.id]?.avg ?? 0));
+    else sorted.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    return sorted;
+  }, [properties, q, county, type, beds, price, sort, ratingMap]);
 
   const markers = filtered
     .filter((p) => p.latitude != null && p.longitude != null)
@@ -115,9 +142,20 @@ function BrowsePage() {
               {isLoading ? "Loading…" : `${filtered.length} home${filtered.length === 1 ? "" : "s"} matching your search`}
             </p>
           </div>
-          <div className="inline-flex rounded-xl border border-border bg-card p-1 text-sm">
-            <button onClick={() => setView("grid")} className={`rounded-lg px-3 py-1.5 ${view === "grid" ? "bg-primary text-primary-foreground" : ""}`}>Grid</button>
-            <button onClick={() => setView("map")} className={`rounded-lg px-3 py-1.5 ${view === "map" ? "bg-primary text-primary-foreground" : ""}`}>Map</button>
+          <div className="flex items-center gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+              <SelectTrigger className="w-[170px]"><SelectValue placeholder="Sort by" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="lowest">Lowest price</SelectItem>
+                <SelectItem value="highest">Highest price</SelectItem>
+                <SelectItem value="rated">Highest rated</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="inline-flex rounded-xl border border-border bg-card p-1 text-sm">
+              <button onClick={() => setView("grid")} className={`rounded-lg px-3 py-1.5 ${view === "grid" ? "bg-primary text-primary-foreground" : ""}`}>Grid</button>
+              <button onClick={() => setView("map")} className={`rounded-lg px-3 py-1.5 ${view === "map" ? "bg-primary text-primary-foreground" : ""}`}>Map</button>
+            </div>
           </div>
         </div>
 

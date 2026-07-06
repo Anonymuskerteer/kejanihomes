@@ -353,9 +353,9 @@ function PropertyTable({
               <td className="px-4 py-3">
                 <div className="flex items-center justify-end gap-1">
                   {actions?.(p)}
-                  <button className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary" title="Edit (coming soon)" disabled>
-                    <Pencil className="h-4 w-4 opacity-30" />
-                  </button>
+                  <Link to="/list-property" search={{ edit: p.id }} className="grid h-8 w-8 place-items-center rounded-md hover:bg-secondary" title="Edit">
+                    <Pencil className="h-4 w-4" />
+                  </Link>
                   <button onClick={() => onDelete(p.id)} className="grid h-8 w-8 place-items-center rounded-md text-destructive hover:bg-destructive/10" title="Delete">
                     <Trash2 className="h-4 w-4" />
                   </button>

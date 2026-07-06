@@ -1,9 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-/**
- * Uploads a list of files to a Supabase storage bucket under the user's folder
- * and returns the public URLs (buckets have a public-read RLS policy).
- */
+// 10 years — buckets are private, so we bake a long-lived signed URL into the row.
+const SIGNED_URL_TTL = 60 * 60 * 24 * 365 * 10;
+
 export async function uploadFiles(
   bucket: "property-images" | "review-photos",
   userId: string,
@@ -17,8 +16,11 @@ export async function uploadFiles(
       .from(bucket)
       .upload(path, file, { contentType: file.type, upsert: false });
     if (error) throw error;
-    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-    urls.push(data.publicUrl);
+    const { data, error: signErr } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(path, SIGNED_URL_TTL);
+    if (signErr || !data?.signedUrl) throw signErr ?? new Error("Could not sign URL");
+    urls.push(data.signedUrl);
   }
   return urls;
 }

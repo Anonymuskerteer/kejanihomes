@@ -27,6 +27,9 @@ export function PropertyCard({ property, averageRating, reviewsCount }: Props) {
           <span className="rounded-full bg-background/95 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-soft">
             {property.property_type}
           </span>
+          <span className="rounded-full bg-success px-2.5 py-1 text-[11px] font-semibold text-success-foreground shadow-soft">
+            Available
+          </span>
           {property.is_featured && (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground shadow-soft">
               <BadgeCheck className="h-3 w-3" /> Featured

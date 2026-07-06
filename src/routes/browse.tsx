@@ -34,6 +34,7 @@ const browseSearch = z.object({
   min: z.coerce.number().optional(),
   max: z.coerce.number().optional(),
   view: z.enum(["grid", "map"]).optional(),
+  sort: z.enum(["newest", "lowest", "highest", "rated"]).optional(),
 });
 
 export const Route = createFileRoute("/browse")({

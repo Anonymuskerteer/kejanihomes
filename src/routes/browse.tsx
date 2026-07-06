@@ -142,9 +142,20 @@ function BrowsePage() {
               {isLoading ? "Loading…" : `${filtered.length} home${filtered.length === 1 ? "" : "s"} matching your search`}
             </p>
           </div>
-          <div className="inline-flex rounded-xl border border-border bg-card p-1 text-sm">
-            <button onClick={() => setView("grid")} className={`rounded-lg px-3 py-1.5 ${view === "grid" ? "bg-primary text-primary-foreground" : ""}`}>Grid</button>
-            <button onClick={() => setView("map")} className={`rounded-lg px-3 py-1.5 ${view === "map" ? "bg-primary text-primary-foreground" : ""}`}>Map</button>
+          <div className="flex items-center gap-2">
+            <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+              <SelectTrigger className="w-[170px]"><SelectValue placeholder="Sort by" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest</SelectItem>
+                <SelectItem value="lowest">Lowest price</SelectItem>
+                <SelectItem value="highest">Highest price</SelectItem>
+                <SelectItem value="rated">Highest rated</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="inline-flex rounded-xl border border-border bg-card p-1 text-sm">
+              <button onClick={() => setView("grid")} className={`rounded-lg px-3 py-1.5 ${view === "grid" ? "bg-primary text-primary-foreground" : ""}`}>Grid</button>
+              <button onClick={() => setView("map")} className={`rounded-lg px-3 py-1.5 ${view === "map" ? "bg-primary text-primary-foreground" : ""}`}>Map</button>
+            </div>
           </div>
         </div>
 

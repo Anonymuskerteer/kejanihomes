@@ -113,6 +113,7 @@ export interface ReviewRow {
   rating: number;
   comment: string;
   photos: string[];
+  is_approved: boolean;
   created_at: string;
 }
 

@@ -216,25 +216,6 @@ function PropertyDetail() {
               </Button>
             </div>
 
-            <div>
-              <h2 className="font-display text-xl font-bold">Reviews</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Every review must include a rating and at least one photo — to keep things honest.
-              </p>
-
-              {user ? (
-                <div className="mt-4">
-                  <ReviewForm
-                    propertyId={property.id}
-                    userId={user.id}
-                    onSubmitted={() => qc.invalidateQueries({ queryKey: ["reviews", id] })}
-                  />
-                </div>
-              ) : (
-                <div className="mt-4 rounded-2xl border border-border bg-primary-soft p-5 text-sm">
-                  <Link to="/auth" className="font-semibold text-primary underline">Sign in</Link> to leave a review.
-                </div>
-              )}
 
             <div>
               <h2 className="font-display text-xl font-bold">Reviews</h2>

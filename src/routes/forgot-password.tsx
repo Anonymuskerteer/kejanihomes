@@ -6,7 +6,6 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({ meta: [{ title: "Reset password — Kejani Homes" }] }),
@@ -22,12 +21,17 @@ function ForgotPasswordPage() {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const res = await fetch("/api/public/password-reset", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          redirectTo: `${window.location.origin}/reset-password`,
+        }),
       });
-      if (error) throw error;
+      if (!res.ok) throw new Error("Could not send reset email");
       setSent(true);
-      toast.success("Reset link sent — check your inbox.");
+      toast.success("If that email exists, a reset link is on its way.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send reset email");
     } finally {
@@ -42,11 +46,11 @@ function ForgotPasswordPage() {
         <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-card">
           <h1 className="font-display text-2xl font-bold">Forgot your password?</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter the email you signed up with and we'll send you a secure link to choose a new password.
+            Enter the email you signed up with and we'll send a secure link so you can choose a new password.
           </p>
           {sent ? (
             <div className="mt-6 rounded-xl bg-primary-soft p-4 text-sm">
-              We've emailed a reset link to <strong>{email}</strong>. The link expires in 1 hour.
+              If <strong>{email}</strong> matches an account, we've emailed a reset link. It expires in 1 hour — check your inbox (and spam).
             </div>
           ) : (
             <form onSubmit={submit} className="mt-6 space-y-4">

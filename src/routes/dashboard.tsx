@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/use-auth";
 import { formatKES, type PropertyRow } from "@/lib/properties";
@@ -40,7 +39,6 @@ function DashboardPage() {
         <main className="container-page flex-1 py-20 text-center text-sm text-muted-foreground">
           Loading your dashboard…
         </main>
-        <SiteFooter />
       </Shell>
     );
   }
@@ -56,7 +54,6 @@ function DashboardPage() {
           <TenantDashboard userId={user.id} />
         )}
       </main>
-      <SiteFooter />
     </Shell>
   );
 }

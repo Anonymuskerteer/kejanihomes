@@ -288,7 +288,7 @@ function PendingReviewsSection() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("reviews")
-        .select("id, rating, comment, photos, created_at, property_id, user_id, properties(title), profiles(full_name)")
+        .select("id, rating, comment, photos, created_at, property_id, user_id, properties(title)")
         .eq("is_approved", false)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -327,7 +327,7 @@ function PendingReviewsSection() {
                     {r.properties?.title ?? "Property"}
                   </Link>
                   <div className="mt-0.5 text-xs text-muted-foreground">
-                    by {r.profiles?.full_name || "Tenant"} · {new Date(r.created_at).toLocaleDateString()}
+                    by Tenant · {new Date(r.created_at).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 text-accent">

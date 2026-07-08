@@ -13,6 +13,8 @@ import {
   Phone,
   Mail,
   CalendarDays,
+  ExternalLink,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
@@ -197,12 +199,28 @@ function PropertyDetail() {
                   }
                 />
               </div>
+              <Button asChild variant="outline" className="mt-3 w-full sm:w-auto">
+                <a
+                  href={
+                    property.latitude && property.longitude
+                      ? `https://www.google.com/maps/search/?api=1&query=${property.latitude},${property.longitude}`
+                      : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                          `${property.address ?? ""} ${property.town} ${property.county} Kenya`,
+                        )}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <ExternalLink className="mr-1.5 h-4 w-4" /> Open in Google Maps
+                </a>
+              </Button>
             </div>
+
 
             <div>
               <h2 className="font-display text-xl font-bold">Reviews</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Every review must include a rating and at least one photo — to keep things honest.
+                Every review needs a rating and at least one photo — and is checked by our team before going public.
               </p>
 
               {user ? (
@@ -228,10 +246,17 @@ function PropertyDetail() {
                   reviews.map((r) => (
                     <article key={r.id} className="rounded-2xl border border-border bg-card p-5">
                       <header className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 text-accent">
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "text-muted-foreground"}`} />
-                          ))}
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 text-accent">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "text-muted-foreground"}`} />
+                            ))}
+                          </div>
+                          {!r.is_approved && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-accent-foreground">
+                              <Clock className="h-3 w-3" /> Pending review
+                            </span>
+                          )}
                         </div>
                         <time className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</time>
                       </header>

@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
 import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
+import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -94,6 +95,11 @@ const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
   path: '/api/public/seed-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPasswordResetRoute = ApiPublicPasswordResetRouteImport.update({
+  id: '/api/public/password-reset',
+  path: '/api/public/password-reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
+  '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
+  '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
+  '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/wishlist'
     | '/property/$id'
+    | '/api/public/password-reset'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/wishlist'
     | '/property/$id'
+    | '/api/public/password-reset'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/saved'
     | '/wishlist'
     | '/property/$id'
+    | '/api/public/password-reset'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   fileRoutesById: FileRoutesById
@@ -208,6 +220,7 @@ export interface RootRouteChildren {
   SavedRoute: typeof SavedRoute
   WishlistRoute: typeof WishlistRoute
   PropertyIdRoute: typeof PropertyIdRoute
+  ApiPublicPasswordResetRoute: typeof ApiPublicPasswordResetRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
   ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
 }
@@ -312,6 +325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/password-reset': {
+      id: '/api/public/password-reset'
+      path: '/api/public/password-reset'
+      fullPath: '/api/public/password-reset'
+      preLoaderRoute: typeof ApiPublicPasswordResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -328,19 +348,10 @@ const rootRouteChildren: RootRouteChildren = {
   SavedRoute: SavedRoute,
   WishlistRoute: WishlistRoute,
   PropertyIdRoute: PropertyIdRoute,
+  ApiPublicPasswordResetRoute: ApiPublicPasswordResetRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
   ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

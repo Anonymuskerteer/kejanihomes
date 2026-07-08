@@ -270,11 +270,95 @@ function AdminDashboard() {
         )}
       </section>
 
+      <PendingReviewsSection />
+
       <section className="mt-10">
         <h2 className="font-display text-xl font-bold">All listings</h2>
         <PropertyTable rows={all} onDelete={remove} showOwner />
       </section>
     </>
+  );
+}
+
+/* ────────── ADMIN — pending reviews ────────── */
+function PendingReviewsSection() {
+  const qc = useQueryClient();
+  const { data: pendingReviews = [] } = useQuery({
+    queryKey: ["pending-reviews"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reviews")
+        .select("id, rating, comment, photos, created_at, property_id, user_id, properties(title), profiles(full_name)")
+        .eq("is_approved", false)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const approve = async (id: string) => {
+    const { error } = await supabase.from("reviews").update({ is_approved: true }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Review approved");
+    qc.invalidateQueries({ queryKey: ["pending-reviews"] });
+  };
+  const reject = async (id: string) => {
+    if (!confirm("Delete this review?")) return;
+    const { error } = await supabase.from("reviews").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Review removed");
+    qc.invalidateQueries({ queryKey: ["pending-reviews"] });
+  };
+
+  return (
+    <section className="mt-10">
+      <h2 className="font-display text-xl font-bold">Pending reviews</h2>
+      {pendingReviews.length === 0 ? (
+        <p className="mt-3 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          No reviews waiting for approval.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-3">
+          {pendingReviews.map((r: any) => (
+            <li key={r.id} className="rounded-2xl border border-border bg-card p-5">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <Link to="/property/$id" params={{ id: r.property_id }} className="font-semibold hover:underline">
+                    {r.properties?.title ?? "Property"}
+                  </Link>
+                  <div className="mt-0.5 text-xs text-muted-foreground">
+                    by {r.profiles?.full_name || "Tenant"} · {new Date(r.created_at).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1 text-accent">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star key={n} className={`h-4 w-4 ${n <= r.rating ? "fill-current" : "text-muted-foreground"}`} />
+                  ))}
+                </div>
+              </div>
+              <p className="mt-2 text-sm">{r.comment}</p>
+              {r.photos?.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {r.photos.map((src: string, i: number) => (
+                    <a key={i} href={src} target="_blank" rel="noreferrer">
+                      <img src={src} alt="" className="h-16 w-16 rounded-lg border border-border object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
+              <div className="mt-3 flex gap-2">
+                <Button size="sm" onClick={() => approve(r.id)}>
+                  <CircleCheck className="mr-1.5 h-4 w-4" /> Approve
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => reject(r.id)}>
+                  <CircleX className="mr-1.5 h-4 w-4" /> Delete
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 

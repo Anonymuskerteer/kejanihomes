@@ -13,6 +13,7 @@ import {
   CircleCheck,
   CircleX,
   Clock,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";

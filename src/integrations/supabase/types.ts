@@ -133,6 +133,7 @@ export type Database = {
           comment: string
           created_at: string
           id: string
+          is_approved: boolean
           photos: string[]
           property_id: string
           rating: number
@@ -142,6 +143,7 @@ export type Database = {
           comment: string
           created_at?: string
           id?: string
+          is_approved?: boolean
           photos?: string[]
           property_id: string
           rating: number
@@ -151,6 +153,7 @@ export type Database = {
           comment?: string
           created_at?: string
           id?: string
+          is_approved?: boolean
           photos?: string[]
           property_id?: string
           rating?: number

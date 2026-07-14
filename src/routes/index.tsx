@@ -16,8 +16,8 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "Kejani Homes — Find your next home in Mwea & beyond" },
       { name: "description", content: "Kenya's friendliest property platform. Verified rentals in Mwea, Kirinyaga and all 47 counties — bedsitters, apartments, maisonettes and houses. Direct landlord contact." },
-      { property: "og:title", content: "Kejani Homes — Mwea & nationwide rentals" },
-      { property: "og:description", content: "Verified rentals across Kenya. Real photos. Real landlords. Honest reviews." },
+      { property: "og:title", content: "Kejani Homes — Find your next home in Mwea & beyond" },
+      { property: "og:description", content: "Kenya's friendliest property platform. Verified rentals in Mwea, Kirinyaga and all 47 counties — bedsitters, apartments, maisonettes and houses. Direct landlord contact." },
     ],
   }),
   component: HomePage,

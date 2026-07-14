@@ -39,20 +39,8 @@ function HomePage() {
     },
   });
 
-  const { data: mwea = [] } = useQuery({
-    queryKey: ["properties", "mwea"],
-    queryFn: async (): Promise<PropertyRow[]> => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("status", "approved")
-        .or("town.ilike.%mwea%,county.eq.Kirinyaga")
-        .order("created_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+
+
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -71,16 +59,8 @@ function HomePage() {
           )}
         </section>
 
-        <section className="container-page mt-20">
-          <SectionHeader eyebrow="Our home base" title="Homes in Mwea, Kirinyaga" subtitle="Where we started. Hand-picked listings in the rice fields and surrounding towns." href="/browse" />
-          {mwea.length === 0 ? (
-            <EmptyState text="No Mwea listings yet — list yours to be the first." />
-          ) : (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {mwea.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          )}
-        </section>
+
+
 
         <HowItWorks />
         <FinalCTA />

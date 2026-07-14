@@ -39,20 +39,8 @@ function HomePage() {
     },
   });
 
-  const { data: mwea = [] } = useQuery({
-    queryKey: ["properties", "mwea"],
-    queryFn: async (): Promise<PropertyRow[]> => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("*")
-        .eq("status", "approved")
-        .or("town.ilike.%mwea%,county.eq.Kirinyaga")
-        .order("created_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
+
+
 
   return (
     <div className="flex min-h-screen flex-col">

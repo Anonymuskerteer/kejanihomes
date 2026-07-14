@@ -339,7 +339,7 @@ function BrowsePage() {
           value: q,
           onChange: setQ,
           placeholder: "Search listings",
-          onSubmit: () => navigate({ search: (s) => ({ ...s, q: q || undefined }) }),
+          onSubmit: () => navigate({ search: (s: z.infer<typeof browseSearch>) => ({ ...s, q: q || undefined }) }),
         }}
       >
         {body}

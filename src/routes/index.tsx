@@ -71,16 +71,8 @@ function HomePage() {
           )}
         </section>
 
-        <section className="container-page mt-20">
-          <SectionHeader eyebrow="Our home base" title="Homes in Mwea, Kirinyaga" subtitle="Where we started. Hand-picked listings in the rice fields and surrounding towns." href="/browse" />
-          {mwea.length === 0 ? (
-            <EmptyState text="No Mwea listings yet — list yours to be the first." />
-          ) : (
-            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {mwea.map((p) => <PropertyCard key={p.id} property={p} />)}
-            </div>
-          )}
-        </section>
+
+
 
         <HowItWorks />
         <FinalCTA />

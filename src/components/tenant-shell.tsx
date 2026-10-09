@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/use-auth";
+import { NavIcons } from "@/components/nav-icons";
 
 export interface TenantSearchConfig {
   value: string;
@@ -38,7 +39,7 @@ export function TenantShell({
 
 function TenantTopBar({ search }: { search?: TenantSearchConfig }) {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { role, signOut } = useAuth();
   const [local, setLocal] = useState("");
   const value = search?.value ?? local;
   const onChange = search?.onChange ?? setLocal;
@@ -80,45 +81,7 @@ function TenantTopBar({ search }: { search?: TenantSearchConfig }) {
           />
         </form>
 
-        <div className="hidden md:block">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                className="h-11 w-11 rounded-full"
-                aria-label="Menu"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                {user?.email?.split("@")[0] ?? "Account"}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/browse">
-                  <LayoutGrid className="mr-2 h-4 w-4" /> Dashboard
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/profile">
-                  <User className="mr-2 h-4 w-4" /> Profile
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/wishlist">
-                  <Heart className="mr-2 h-4 w-4" /> Saved
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={doSignOut}>
-                <LogOut className="mr-2 h-4 w-4" /> Sign out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <NavIcons role={role} onSignOut={signOut} className="hidden md:flex" />
       </div>
     </header>
   );

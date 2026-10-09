@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/use-auth";
+import { NavIcons } from "@/components/nav-icons";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
@@ -38,59 +39,7 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-2">
-            {isLandlord && (
-              <Button asChild size="sm" className="hidden shadow-soft sm:inline-flex">
-                <Link to="/list-property"><Plus className="mr-1.5 h-4 w-4" />List property</Link>
-              </Button>
-            )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="h-11 w-11 rounded-full" aria-label="Menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuLabel className="text-xs capitalize text-muted-foreground">
-                  {role ?? "Account"}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {isLandlord ? (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/dashboard"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/browse"><Search className="mr-2 h-4 w-4" />Browse</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile"><User className="mr-2 h-4 w-4" />Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild className="sm:hidden">
-                      <Link to="/list-property"><Plus className="mr-2 h-4 w-4" />List property</Link>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/browse"><LayoutDashboard className="mr-2 h-4 w-4" />Dashboard</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile"><User className="mr-2 h-4 w-4" />Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/wishlist"><Heart className="mr-2 h-4 w-4" />Saved</Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={doSignOut}>
-                  <LogOut className="mr-2 h-4 w-4" /> Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+          <NavIcons role={role} onSignOut={signOut} />
         </div>
       </header>
     );

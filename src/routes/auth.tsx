@@ -7,6 +7,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/password-input";
 import { supabase } from "@/integrations/supabase/client";
 
 const searchSchema = z.object({
@@ -41,6 +42,7 @@ function AuthPage() {
         toast.success("Welcome back!");
         navigate({ to: "/dashboard" });
       } else {
+        if (!/^(\+?254|0)[17]\d{8}$/.test(phone.replace(/\s/g, ""))) throw new Error("A valid phone number is required");
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -123,8 +125,12 @@ function AuthPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>Phone (optional)</Label>
+                    <Label>Phone number</Label>
                     <Input
+                      required
+                      type="tel"
+                      pattern="^(\+?254|0)[17]\d{8}$"
+                      title="Enter a valid Kenyan number, e.g. 0712345678 or +254712345678"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+2547…"
@@ -144,9 +150,8 @@ function AuthPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Password</Label>
-                <Input
+                <PasswordInput
                   required
-                  type="password"
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}

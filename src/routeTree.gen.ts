@@ -23,6 +23,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
 import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
+import { Route as ApiPublicPasswordResetVerifyRouteImport } from './routes/api/public/password-reset-verify'
 import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
 
 const WishlistRoute = WishlistRouteImport.update({
@@ -95,6 +96,12 @@ const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
   path: '/api/public/seed-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPasswordResetVerifyRoute =
+  ApiPublicPasswordResetVerifyRouteImport.update({
+    id: '/api/public/password-reset-verify',
+    path: '/api/public/password-reset-verify',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPasswordResetRoute = ApiPublicPasswordResetRouteImport.update({
   id: '/api/public/password-reset',
   path: '/api/public/password-reset',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
+  '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
+  '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -150,6 +159,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
+  '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
 }
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/property/$id'
     | '/api/public/password-reset'
+    | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   fileRoutesByTo: FileRoutesByTo
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/property/$id'
     | '/api/public/password-reset'
+    | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   id:
@@ -203,6 +215,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/property/$id'
     | '/api/public/password-reset'
+    | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
   fileRoutesById: FileRoutesById
@@ -221,6 +234,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicPasswordResetRoute: typeof ApiPublicPasswordResetRoute
+  ApiPublicPasswordResetVerifyRoute: typeof ApiPublicPasswordResetVerifyRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
   ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
 }
@@ -325,6 +339,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/password-reset-verify': {
+      id: '/api/public/password-reset-verify'
+      path: '/api/public/password-reset-verify'
+      fullPath: '/api/public/password-reset-verify'
+      preLoaderRoute: typeof ApiPublicPasswordResetVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/password-reset': {
       id: '/api/public/password-reset'
       path: '/api/public/password-reset'
@@ -349,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicPasswordResetRoute: ApiPublicPasswordResetRoute,
+  ApiPublicPasswordResetVerifyRoute: ApiPublicPasswordResetVerifyRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
   ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
 }

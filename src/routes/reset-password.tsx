@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/password-input";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
@@ -66,9 +67,8 @@ function ResetPasswordPage() {
           <form onSubmit={submit} className="mt-6 space-y-4">
             <div className="space-y-1.5">
               <Label>New password</Label>
-              <Input
+              <PasswordInput
                 required
-                type="password"
                 minLength={6}
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
@@ -76,9 +76,8 @@ function ResetPasswordPage() {
             </div>
             <div className="space-y-1.5">
               <Label>Confirm new password</Label>
-              <Input
+              <PasswordInput
                 required
-                type="password"
                 minLength={6}
                 value={pw2}
                 onChange={(e) => setPw2(e.target.value)}

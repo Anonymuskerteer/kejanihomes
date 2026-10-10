@@ -31,6 +31,23 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [awaitingCode, setAwaitingCode] = useState(false);
+  const [code, setCode] = useState("");
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code, type: "email" });
+      if (error) throw error;
+      toast.success("Account activated — welcome!");
+      navigate({ to: role === "landlord" ? "/dashboard" : "/browse" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Invalid or expired code");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,17 +60,15 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       } else {
         if (!/^(\+?254|0)[17]\d{8}$/.test(phone.replace(/\s/g, ""))) throw new Error("A valid phone number is required");
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: { full_name: fullName, phone, role },
-            emailRedirectTo: `${window.location.origin}/dashboard`,
-          },
+        const res = await fetch("/api/public/signup", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
         });
-        if (error) throw error;
-        toast.success("Account created — you're signed in.");
-        navigate({ to: role === "landlord" ? "/dashboard" : "/browse" });
+        const out = (await res.json()) as { ok: boolean; error?: string };
+        if (!out.ok) throw new Error(out.error ?? "Could not create account");
+        toast.success("Check your email for your activation code.");
+        setAwaitingCode(true);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");
@@ -112,6 +127,29 @@ function AuthPage() {
                 : "Join Kejani Homes in under a minute."}
             </p>
 
+            {awaitingCode ? (
+              <form className="mt-6 space-y-4" onSubmit={verifyCode}>
+                <p className="text-sm text-muted-foreground">
+                  We emailed an activation code to <strong>{email}</strong>. Enter it below, or tap the link in the email.
+                </p>
+                <Input
+                  required
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="••••••"
+                  className="h-14 text-center text-2xl font-bold tracking-[0.5em]"
+                />
+                <Button className="w-full" size="lg" type="submit" disabled={busy || code.length < 6}>
+                  {busy ? "Verifying…" : "Activate account"}
+                </Button>
+                <button type="button" className="w-full text-xs text-muted-foreground hover:text-foreground" onClick={() => setAwaitingCode(false)}>
+                  Back
+                </button>
+              </form>
+            ) : (
             <form className="mt-6 space-y-4" onSubmit={submit}>
               {mode === "signup" && (
                 <>
@@ -206,6 +244,7 @@ function AuthPage() {
                 </div>
               )}
             </form>
+            )}
           </div>
         </div>
       </main>

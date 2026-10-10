@@ -19,8 +19,10 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
+import { Route as ApiPublicSignupRouteImport } from './routes/api/public/signup'
 import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
 import { Route as ApiPublicPasswordResetVerifyRouteImport } from './routes/api/public/password-reset-verify'
@@ -76,6 +78,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ActivateRoute = ActivateRouteImport.update({
+  id: '/activate',
+  path: '/activate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -84,6 +91,11 @@ const IndexRoute = IndexRouteImport.update({
 const PropertyIdRoute = PropertyIdRouteImport.update({
   id: '/property/$id',
   path: '/property/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSignupRoute = ApiPublicSignupRouteImport.update({
+  id: '/api/public/signup',
+  path: '/api/public/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSeedTenantRoute = ApiPublicSeedTenantRouteImport.update({
@@ -110,6 +122,7 @@ const ApiPublicPasswordResetRoute = ApiPublicPasswordResetRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
@@ -125,9 +138,11 @@ export interface FileRoutesByFullPath {
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
+  '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
@@ -143,10 +158,12 @@ export interface FileRoutesByTo {
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
+  '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/activate': typeof ActivateRoute
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
@@ -162,11 +179,13 @@ export interface FileRoutesById {
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
+  '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/activate'
     | '/auth'
     | '/browse'
     | '/dashboard'
@@ -182,9 +201,11 @@ export interface FileRouteTypes {
     | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
+    | '/api/public/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/activate'
     | '/auth'
     | '/browse'
     | '/dashboard'
@@ -200,9 +221,11 @@ export interface FileRouteTypes {
     | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
+    | '/api/public/signup'
   id:
     | '__root__'
     | '/'
+    | '/activate'
     | '/auth'
     | '/browse'
     | '/dashboard'
@@ -218,10 +241,12 @@ export interface FileRouteTypes {
     | '/api/public/password-reset-verify'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
+    | '/api/public/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ActivateRoute: typeof ActivateRoute
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   DashboardRoute: typeof DashboardRoute
@@ -237,6 +262,7 @@ export interface RootRouteChildren {
   ApiPublicPasswordResetVerifyRoute: typeof ApiPublicPasswordResetVerifyRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
   ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
+  ApiPublicSignupRoute: typeof ApiPublicSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -311,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/activate': {
+      id: '/activate'
+      path: '/activate'
+      fullPath: '/activate'
+      preLoaderRoute: typeof ActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -323,6 +356,13 @@ declare module '@tanstack/react-router' {
       path: '/property/$id'
       fullPath: '/property/$id'
       preLoaderRoute: typeof PropertyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/signup': {
+      id: '/api/public/signup'
+      path: '/api/public/signup'
+      fullPath: '/api/public/signup'
+      preLoaderRoute: typeof ApiPublicSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/seed-tenant': {
@@ -358,6 +398,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ActivateRoute: ActivateRoute,
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   DashboardRoute: DashboardRoute,
@@ -373,6 +414,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPasswordResetVerifyRoute: ApiPublicPasswordResetVerifyRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
   ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
+  ApiPublicSignupRoute: ApiPublicSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

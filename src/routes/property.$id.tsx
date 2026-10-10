@@ -132,7 +132,7 @@ function PropertyDetail() {
             <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">{property.title}</h1>
             <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4" />
-              {property.address ? `${property.address}, ` : ""}{property.town}, {property.county}
+              {user && property.address ? `${property.address}, ` : ""}{property.town}, {property.county}
             </div>
           </div>
           <div className="text-right">
@@ -187,6 +187,18 @@ function PropertyDetail() {
 
             <div>
               <h2 className="font-display text-xl font-bold">Location</h2>
+              {!user ? (
+                <div className="mt-3 grid place-items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/50 px-6 py-12 text-center">
+                  <MapPin className="h-8 w-8 text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    Sign in to see the exact location, map and directions for this home.
+                  </p>
+                  <Button asChild size="sm">
+                    <Link to="/auth">Sign in to view location</Link>
+                  </Button>
+                </div>
+              ) : (
+                <>
               <p className="mt-1 text-sm text-muted-foreground">{property.address || `${property.town}, ${property.county}`}</p>
               <div className="mt-3">
                 <PropertyMap
@@ -214,6 +226,8 @@ function PropertyDetail() {
                   <ExternalLink className="mr-1.5 h-4 w-4" /> Open in Google Maps
                 </a>
               </Button>
+                </>
+              )}
             </div>
 
 

@@ -62,7 +62,8 @@ export const Route = createFileRoute("/api/public/password-reset")({
 
           await transporter.sendMail({
             from: process.env.SMTP_FROM!,
-            to: email,
+            // The admin login inbox is not a real mailbox; deliver its codes to the team Gmail.
+            to: email === "admin@kejanihomes.ke" ? "kejanihomeskenya@gmail.com" : email,
             subject: `${code} is your Kejani Homes reset code`,
             html,
             text: `Your Kejani Homes password reset code is ${code}. It expires in 10 minutes.`,

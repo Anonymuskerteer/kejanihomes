@@ -8,6 +8,13 @@
       "when": 1791582962256,
       "tag": "0000_password_reset_codes",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791620851257,
+      "tag": "0001_admin_email_ke",
+      "breakpoints": true
     }
   ]
 }

@@ -9,73 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as ActivateRouteImport } from './routes/activate'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as BrowseRouteImport } from './routes/browse'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as HowItWorksRouteImport } from './routes/how-it-works'
-import { Route as ListPropertyRouteImport } from './routes/list-property'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as ResetPasswordRouteImport } from './routes/reset-password'
-import { Route as SavedRouteImport } from './routes/saved'
 import { Route as WishlistRouteImport } from './routes/wishlist'
+import { Route as SavedRouteImport } from './routes/saved'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ListPropertyRouteImport } from './routes/list-property'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ActivateRouteImport } from './routes/activate'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
-import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
-import { Route as ApiPublicPasswordResetVerifyRouteImport } from './routes/api/public/password-reset-verify'
-import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
-import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSignupRouteImport } from './routes/api/public/signup'
+import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
+import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
+import { Route as ApiPublicPasswordResetVerifyRouteImport } from './routes/api/public/password-reset-verify'
+import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ActivateRoute = ActivateRouteImport.update({
-  id: '/activate',
-  path: '/activate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrowseRoute = BrowseRouteImport.update({
-  id: '/browse',
-  path: '/browse',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HowItWorksRoute = HowItWorksRouteImport.update({
-  id: '/how-it-works',
-  path: '/how-it-works',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ListPropertyRoute = ListPropertyRouteImport.update({
-  id: '/list-property',
-  path: '/list-property',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ResetPasswordRoute = ResetPasswordRouteImport.update({
-  id: '/reset-password',
-  path: '/reset-password',
+const WishlistRoute = WishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SavedRoute = SavedRouteImport.update({
@@ -83,9 +38,54 @@ const SavedRoute = SavedRouteImport.update({
   path: '/saved',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WishlistRoute = WishlistRouteImport.update({
-  id: '/wishlist',
-  path: '/wishlist',
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListPropertyRoute = ListPropertyRouteImport.update({
+  id: '/list-property',
+  path: '/list-property',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ActivateRoute = ActivateRouteImport.update({
+  id: '/activate',
+  path: '/activate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PropertyIdRoute = PropertyIdRouteImport.update({
@@ -93,9 +93,19 @@ const PropertyIdRoute = PropertyIdRouteImport.update({
   path: '/property/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicPasswordResetRoute = ApiPublicPasswordResetRouteImport.update({
-  id: '/api/public/password-reset',
-  path: '/api/public/password-reset',
+const ApiPublicSignupRoute = ApiPublicSignupRouteImport.update({
+  id: '/api/public/signup',
+  path: '/api/public/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSeedTenantRoute = ApiPublicSeedTenantRouteImport.update({
+  id: '/api/public/seed-tenant',
+  path: '/api/public/seed-tenant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
+  id: '/api/public/seed-admin',
+  path: '/api/public/seed-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicPasswordResetVerifyRoute =
@@ -104,19 +114,9 @@ const ApiPublicPasswordResetVerifyRoute =
     path: '/api/public/password-reset-verify',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
-  id: '/api/public/seed-admin',
-  path: '/api/public/seed-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSeedTenantRoute = ApiPublicSeedTenantRouteImport.update({
-  id: '/api/public/seed-tenant',
-  path: '/api/public/seed-tenant',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSignupRoute = ApiPublicSignupRouteImport.update({
-  id: '/api/public/signup',
-  path: '/api/public/signup',
+const ApiPublicPasswordResetRoute = ApiPublicPasswordResetRouteImport.update({
+  id: '/api/public/password-reset',
+  path: '/api/public/password-reset',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -267,74 +267,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/activate': {
-      id: '/activate'
-      path: '/activate'
-      fullPath: '/activate'
-      preLoaderRoute: typeof ActivateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/browse': {
-      id: '/browse'
-      path: '/browse'
-      fullPath: '/browse'
-      preLoaderRoute: typeof BrowseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/how-it-works': {
-      id: '/how-it-works'
-      path: '/how-it-works'
-      fullPath: '/how-it-works'
-      preLoaderRoute: typeof HowItWorksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/list-property': {
-      id: '/list-property'
-      path: '/list-property'
-      fullPath: '/list-property'
-      preLoaderRoute: typeof ListPropertyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reset-password': {
-      id: '/reset-password'
-      path: '/reset-password'
-      fullPath: '/reset-password'
-      preLoaderRoute: typeof ResetPasswordRouteImport
+    '/wishlist': {
+      id: '/wishlist'
+      path: '/wishlist'
+      fullPath: '/wishlist'
+      preLoaderRoute: typeof WishlistRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/saved': {
@@ -344,11 +281,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SavedRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/wishlist': {
-      id: '/wishlist'
-      path: '/wishlist'
-      fullPath: '/wishlist'
-      preLoaderRoute: typeof WishlistRouteImport
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/list-property': {
+      id: '/list-property'
+      path: '/list-property'
+      fullPath: '/list-property'
+      preLoaderRoute: typeof ListPropertyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/activate': {
+      id: '/activate'
+      path: '/activate'
+      fullPath: '/activate'
+      preLoaderRoute: typeof ActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/property/$id': {
@@ -358,25 +358,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/password-reset': {
-      id: '/api/public/password-reset'
-      path: '/api/public/password-reset'
-      fullPath: '/api/public/password-reset'
-      preLoaderRoute: typeof ApiPublicPasswordResetRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/password-reset-verify': {
-      id: '/api/public/password-reset-verify'
-      path: '/api/public/password-reset-verify'
-      fullPath: '/api/public/password-reset-verify'
-      preLoaderRoute: typeof ApiPublicPasswordResetVerifyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/seed-admin': {
-      id: '/api/public/seed-admin'
-      path: '/api/public/seed-admin'
-      fullPath: '/api/public/seed-admin'
-      preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
+    '/api/public/signup': {
+      id: '/api/public/signup'
+      path: '/api/public/signup'
+      fullPath: '/api/public/signup'
+      preLoaderRoute: typeof ApiPublicSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/seed-tenant': {
@@ -386,11 +372,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSeedTenantRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/signup': {
-      id: '/api/public/signup'
-      path: '/api/public/signup'
-      fullPath: '/api/public/signup'
-      preLoaderRoute: typeof ApiPublicSignupRouteImport
+    '/api/public/seed-admin': {
+      id: '/api/public/seed-admin'
+      path: '/api/public/seed-admin'
+      fullPath: '/api/public/seed-admin'
+      preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/password-reset-verify': {
+      id: '/api/public/password-reset-verify'
+      path: '/api/public/password-reset-verify'
+      fullPath: '/api/public/password-reset-verify'
+      preLoaderRoute: typeof ApiPublicPasswordResetVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/password-reset': {
+      id: '/api/public/password-reset'
+      path: '/api/public/password-reset'
+      fullPath: '/api/public/password-reset'
+      preLoaderRoute: typeof ApiPublicPasswordResetRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

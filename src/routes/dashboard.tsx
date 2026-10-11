@@ -240,7 +240,7 @@ function AdminDashboard() {
 
   return (
     <>
-      <PageHeader title="Admin dashboard" subtitle="Moderate listings and keep the platform healthy." />
+      <PageHeader title="Listings" subtitle="Review, approve and moderate every listing on the platform." />
 
       <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-4">
         <Stat icon={Home} label="Total listings" value={totals.total} />

@@ -62,6 +62,9 @@ export function useAuth(): AuthState & {
   }, []);
 
   const signOut = async () => {
+    if (state.user) {
+      await supabase.from("activity_logs").insert({ actor_id: state.user.id, category: "system", action: "sign_out", details: { email: state.user.email ?? null } });
+    }
     await supabase.auth.signOut();
   };
 

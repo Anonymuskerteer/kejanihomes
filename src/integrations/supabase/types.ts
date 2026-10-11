@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          category: string
+          created_at: string
+          details: Json
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          category?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          category?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
       password_reset_codes: {
         Row: {
           attempts: number
@@ -46,6 +79,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          account_status: string
           avatar_url: string | null
           created_at: string
           email: string | null
@@ -55,6 +89,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_status?: string
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -64,6 +99,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_status?: string
           avatar_url?: string | null
           created_at?: string
           email?: string | null
@@ -224,6 +260,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_bans: {
+        Row: {
+          banned_by: string | null
+          created_at: string
+          email: string | null
+          id: string
+          phone: string | null
+          reason: string | null
+        }
+        Insert: {
+          banned_by?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          reason?: string | null
+        }
+        Update: {
+          banned_by?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          phone?: string | null
+          reason?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

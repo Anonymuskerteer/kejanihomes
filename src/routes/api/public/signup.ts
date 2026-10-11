@@ -21,6 +21,13 @@ export const Route = createFileRoute("/api/public/signup")({
           if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const normPhone = phone.replace(/^(\+?254|0)/, "");
+          const { data: bans } = await supabaseAdmin
+            .from("user_bans")
+            .select("email, phone")
+            .or(`email.eq.${email},phone.ilike.%${normPhone}`);
+          if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
+
           const { data, error } = await supabaseAdmin.auth.admin.generateLink({
             type: "signup",
             email,

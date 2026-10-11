@@ -22,6 +22,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ActivateRouteImport } from './routes/activate'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PropertyIdRouteImport } from './routes/property.$id'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiPublicSignupRouteImport } from './routes/api/public/signup'
 import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
@@ -94,6 +97,21 @@ const PropertyIdRoute = PropertyIdRouteImport.update({
   path: '/property/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/admin/logs',
+  path: '/admin/logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSignupRoute = ApiPublicSignupRouteImport.update({
   id: '/api/public/signup',
   path: '/api/public/signup',
@@ -140,6 +158,9 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
@@ -161,6 +182,9 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
@@ -183,6 +207,9 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/saved': typeof SavedRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/users': typeof AdminUsersRoute
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
@@ -206,6 +233,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/saved'
     | '/wishlist'
+    | '/admin/analytics'
+    | '/admin/logs'
+    | '/admin/users'
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
@@ -227,6 +257,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/saved'
     | '/wishlist'
+    | '/admin/analytics'
+    | '/admin/logs'
+    | '/admin/users'
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
@@ -248,6 +281,9 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/saved'
     | '/wishlist'
+    | '/admin/analytics'
+    | '/admin/logs'
+    | '/admin/users'
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
@@ -270,6 +306,9 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SavedRoute: typeof SavedRoute
   WishlistRoute: typeof WishlistRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicPasswordResetRoute: typeof ApiPublicPasswordResetRoute
   ApiPublicPasswordResetVerifyRoute: typeof ApiPublicPasswordResetVerifyRoute
@@ -372,6 +411,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PropertyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/admin/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/signup': {
       id: '/api/public/signup'
       path: '/api/public/signup'
@@ -430,6 +490,9 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SavedRoute: SavedRoute,
   WishlistRoute: WishlistRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminLogsRoute: AdminLogsRoute,
+  AdminUsersRoute: AdminUsersRoute,
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicPasswordResetRoute: ApiPublicPasswordResetRoute,
   ApiPublicPasswordResetVerifyRoute: ApiPublicPasswordResetVerifyRoute,

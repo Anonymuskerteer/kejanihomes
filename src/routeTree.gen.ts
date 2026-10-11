@@ -25,6 +25,7 @@ import { Route as PropertyIdRouteImport } from './routes/property.$id'
 import { Route as ApiPublicSignupRouteImport } from './routes/api/public/signup'
 import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
 import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
+import { Route as ApiPublicResendActivationRouteImport } from './routes/api/public/resend-activation'
 import { Route as ApiPublicPasswordResetVerifyRouteImport } from './routes/api/public/password-reset-verify'
 import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
 
@@ -108,6 +109,12 @@ const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
   path: '/api/public/seed-admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicResendActivationRoute =
+  ApiPublicResendActivationRouteImport.update({
+    id: '/api/public/resend-activation',
+    path: '/api/public/resend-activation',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPasswordResetVerifyRoute =
   ApiPublicPasswordResetVerifyRouteImport.update({
     id: '/api/public/password-reset-verify',
@@ -136,6 +143,7 @@ export interface FileRoutesByFullPath {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
+  '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
@@ -156,6 +164,7 @@ export interface FileRoutesByTo {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
+  '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
@@ -177,6 +186,7 @@ export interface FileRoutesById {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/password-reset-verify': typeof ApiPublicPasswordResetVerifyRoute
+  '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
   '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
   '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
@@ -199,6 +209,7 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
+    | '/api/public/resend-activation'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
     | '/api/public/signup'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
+    | '/api/public/resend-activation'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
     | '/api/public/signup'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/password-reset-verify'
+    | '/api/public/resend-activation'
     | '/api/public/seed-admin'
     | '/api/public/seed-tenant'
     | '/api/public/signup'
@@ -260,6 +273,7 @@ export interface RootRouteChildren {
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicPasswordResetRoute: typeof ApiPublicPasswordResetRoute
   ApiPublicPasswordResetVerifyRoute: typeof ApiPublicPasswordResetVerifyRoute
+  ApiPublicResendActivationRoute: typeof ApiPublicResendActivationRoute
   ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
   ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
   ApiPublicSignupRoute: typeof ApiPublicSignupRoute
@@ -379,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/resend-activation': {
+      id: '/api/public/resend-activation'
+      path: '/api/public/resend-activation'
+      fullPath: '/api/public/resend-activation'
+      preLoaderRoute: typeof ApiPublicResendActivationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/password-reset-verify': {
       id: '/api/public/password-reset-verify'
       path: '/api/public/password-reset-verify'
@@ -412,6 +433,7 @@ const rootRouteChildren: RootRouteChildren = {
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicPasswordResetRoute: ApiPublicPasswordResetRoute,
   ApiPublicPasswordResetVerifyRoute: ApiPublicPasswordResetVerifyRoute,
+  ApiPublicResendActivationRoute: ApiPublicResendActivationRoute,
   ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
   ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
   ApiPublicSignupRoute: ApiPublicSignupRoute,

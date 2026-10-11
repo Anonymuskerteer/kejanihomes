@@ -34,6 +34,15 @@ function AuthPage() {
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [code, setCode] = useState("");
 
+  const resend = async () => {
+    await fetch("/api/public/resend-activation", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    });
+    toast.success("A new activation code has been sent to your email.");
+  };
+
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
@@ -55,6 +64,12 @@ function AuthPage() {
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error && /not confirmed/i.test(error.message)) {
+          await resend();
+          setAwaitingCode(true);
+          return;
+        }
+        if (error && /banned/i.test(error.message)) throw new Error("This account has been deactivated. Contact support.");
         if (error) throw error;
         toast.success("Welcome back!");
         navigate({ to: "/dashboard" });
@@ -145,9 +160,14 @@ function AuthPage() {
                 <Button className="w-full" size="lg" type="submit" disabled={busy || code.length < 6}>
                   {busy ? "Verifying…" : "Activate account"}
                 </Button>
-                <button type="button" className="w-full text-xs text-muted-foreground hover:text-foreground" onClick={() => setAwaitingCode(false)}>
-                  Back
-                </button>
+                <div className="flex justify-between text-xs">
+                  <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setAwaitingCode(false)}>
+                    Back
+                  </button>
+                  <button type="button" className="text-primary hover:underline" disabled={busy} onClick={resend}>
+                    Resend code
+                  </button>
+                </div>
               </form>
             ) : (
             <form className="mt-6 space-y-4" onSubmit={submit}>

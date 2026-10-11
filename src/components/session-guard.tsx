@@ -10,6 +10,7 @@ const WARN_MS = 60 * 1000; // warn 1 min before
 
 // Which roles may open each protected page. Anything not listed is public.
 const ACCESS: { prefix: string; roles: AppRole[] }[] = [
+  { prefix: "/admin", roles: ["admin"] },
   { prefix: "/list-property", roles: ["landlord", "admin"] },
   { prefix: "/dashboard", roles: ["landlord", "admin", "tenant"] },
   { prefix: "/wishlist", roles: ["tenant", "landlord", "admin"] },
@@ -42,6 +43,7 @@ export function SessionGuard() {
 
   const expire = async (reason: string) => {
     clearCookie();
+    if (user) await supabase.from("activity_logs").insert({ actor_id: user.id, category: "system", action: "session_expired", details: { email: user.email ?? null } });
     await supabase.auth.signOut();
     toast.error(reason);
     navigate({ to: "/auth", replace: true });
@@ -60,6 +62,7 @@ export function SessionGuard() {
       const signedInAt = new Date(user.last_sign_in_at ?? 0).getTime();
       if (Date.now() - signedInAt < 60_000) {
         writeCookie(`${user.id}.${Date.now()}`);
+        supabase.from("activity_logs").insert({ actor_id: user.id, category: "system", action: "sign_in", details: { email: user.email ?? null } }).then(() => {});
       } else {
         expire("Your session has ended. Please sign in again.");
       }

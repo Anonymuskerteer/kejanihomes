@@ -44,6 +44,14 @@ export const Route = createFileRoute("/api/public/password-reset-verify")({
           const { error } = await supabaseAdmin.auth.admin.updateUserById(prof.id, { password });
           if (error) return fail(error.message);
           await supabaseAdmin.from("password_reset_codes").update({ used: true }).eq("id", row.id);
+          await supabaseAdmin.from("activity_logs").insert({
+            actor_id: prof.id,
+            category: "system",
+            action: "password_reset",
+            target_type: "user",
+            target_id: prof.id,
+            details: { email },
+          });
           return Response.json({ ok: true });
         } catch (err) {
           console.error("[password-reset-verify] failed:", err);

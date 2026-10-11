@@ -15,6 +15,13 @@
       "when": 1791620851257,
       "tag": "0001_admin_email_ke",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791679601215,
+      "tag": "0002_admin_users_logs",
+      "breakpoints": true
     }
   ]
 }

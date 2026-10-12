@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/password-input";
+import { useServerFn } from "@tanstack/react-start";
+import { completeForcedReset } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
@@ -20,6 +22,7 @@ function ResetPasswordPage() {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
+  const setPassword = useServerFn(completeForcedReset);
 
   useEffect(() => {
     // Supabase places the recovery token in the URL hash and emits a PASSWORD_RECOVERY event.
@@ -39,8 +42,7 @@ function ResetPasswordPage() {
     if (pw !== pw2) return toast.error("Passwords don't match");
     setBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password: pw });
-      if (error) throw error;
+      await setPassword({ data: { password: pw } });
       toast.success("Password updated. You're signed in.");
       navigate({ to: "/dashboard" });
     } catch (err) {
@@ -57,7 +59,7 @@ function ResetPasswordPage() {
         <div className="w-full max-w-md rounded-3xl border border-border bg-card p-8 shadow-card">
           <h1 className="font-display text-2xl font-bold">Set a new password</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Choose a strong password you haven't used before.
+            Choose a new password and enter it twice to continue.
           </p>
           {!recoveryReady && (
             <p className="mt-4 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">

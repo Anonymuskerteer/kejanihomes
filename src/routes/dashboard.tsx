@@ -177,6 +177,14 @@ function LandlordDashboard({ userId }: { userId: string }) {
     qc.invalidateQueries({ queryKey: ["my-properties", userId] });
   };
 
+  const setTaken = async (id: string, taken: boolean) => {
+    if (taken && !confirm("Mark this home as taken? It will be removed from public listings.")) return;
+    const { error } = await supabase.from("properties").update({ status: taken ? "taken" : "pending" }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(taken ? "Marked as taken — removed from listings" : "Relisted — sent for review");
+    qc.invalidateQueries({ queryKey: ["my-properties", userId] });
+  };
+
   return (
     <>
       <PageHeader
@@ -194,7 +202,18 @@ function LandlordDashboard({ userId }: { userId: string }) {
 
       <section className="mt-10">
         <h2 className="font-display text-xl font-bold">Your properties</h2>
-        <PropertyTable rows={mine} onDelete={remove} showOwner={false} />
+        <PropertyTable
+          rows={mine}
+          onDelete={remove}
+          showOwner={false}
+          actions={(p) =>
+            p.status === "taken" ? (
+              <button onClick={() => setTaken(p.id, false)} className="rounded-md px-2 py-1 text-xs font-semibold text-primary hover:bg-primary-soft" title="Put back on the market">Relist</button>
+            ) : p.status === "approved" ? (
+              <button onClick={() => setTaken(p.id, true)} className="rounded-md bg-secondary px-2 py-1 text-xs font-semibold hover:bg-primary hover:text-primary-foreground" title="Remove from public listings">Mark as taken</button>
+            ) : null
+          }
+        />
       </section>
     </>
   );
@@ -456,6 +475,7 @@ function StatusPill({ status }: { status: string }) {
     approved: "bg-success/15 text-success",
     pending: "bg-accent/20 text-accent-foreground",
     rejected: "bg-destructive/15 text-destructive",
+    taken: "bg-muted text-muted-foreground",
   };
   return (
     <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${map[status] ?? "bg-muted"}`}>

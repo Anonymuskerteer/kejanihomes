@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
-import { BedDouble, Bath, MapPin, Star, BadgeCheck } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { BedDouble, Bath, MapPin, Star, BadgeCheck, Heart, MessageCircle } from "lucide-react";
 import { formatKES, type PropertyRow } from "@/lib/properties";
 
 interface Props {
@@ -10,6 +10,7 @@ interface Props {
 
 export function PropertyCard({ property, averageRating, reviewsCount }: Props) {
   const cover = property.images[0] || "/placeholder.svg";
+  const navigate = useNavigate();
   return (
     <Link
       to="/property/$id"
@@ -36,6 +37,26 @@ export function PropertyCard({ property, averageRating, reviewsCount }: Props) {
             </span>
           )}
         </div>
+        <div
+          className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-background/95 px-2.5 py-1 text-[11px] font-semibold text-foreground shadow-soft"
+          title={`${property.saves_count ?? 0} people saved this home`}
+        >
+          <Heart className={`h-3.5 w-3.5 ${property.saves_count ? "fill-destructive text-destructive" : ""}`} />
+          {property.saves_count ?? 0}
+        </div>
+        <button
+          type="button"
+          aria-label="Chat with landlord about this home"
+          title="Chat with landlord"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigate({ to: "/chat", search: { property: property.id } });
+          }}
+          className="absolute bottom-3 right-3 grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground shadow-soft transition hover:scale-105"
+        >
+          <MessageCircle className="h-4 w-4" />
+        </button>
         <div className="absolute bottom-3 left-3 rounded-xl bg-foreground/85 px-3 py-1.5 text-sm font-bold text-background backdrop-blur">
           {formatKES(property.price_kes)}
           <span className="ml-1 text-[10px] font-medium text-background/70">/mo</span>

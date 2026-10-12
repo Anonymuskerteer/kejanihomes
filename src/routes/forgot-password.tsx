@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { z } from "zod";
 import { toast } from "sonner";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/forgot-password")({
       { property: "og:description", content: "Reset your Kejani Homes password with a 4-digit code." },
     ],
   }),
+  validateSearch: z.object({ email: z.string().optional(), code: z.string().optional() }),
   component: ForgotPasswordPage,
 });
 
@@ -28,6 +30,16 @@ function ForgotPasswordPage() {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
+  const search = Route.useSearch();
+
+  // Direct link from the email: prefill email + code and jump to the new-password step.
+  useEffect(() => {
+    if (search.email && search.code && /^\d{4}$/.test(search.code)) {
+      setEmail(search.email);
+      setCode(search.code);
+      setStep("code");
+    }
+  }, [search.email, search.code]);
 
   const requestCode = async (e?: React.FormEvent) => {
     e?.preventDefault();

@@ -51,11 +51,16 @@ export const Route = createFileRoute("/api/public/password-reset")({
             },
           });
 
+          const resetLink = `${new URL(request.url).origin}/forgot-password?email=${encodeURIComponent(email)}&code=${code}`;
           const html = `
             <div style="font-family:Arial,sans-serif;background:#fff;padding:32px;max-width:560px;margin:0 auto">
               <h1 style="color:#317E3D;font-size:22px;margin:0 0 12px">Your password reset code</h1>
               <p style="color:#333;font-size:15px;line-height:1.5">Use this code to reset your Kejani Homes password. It expires in 10 minutes.</p>
               <p style="text-align:center;margin:28px 0;font-size:36px;letter-spacing:12px;font-weight:700;color:#317E3D">${code}</p>
+              <p style="text-align:center;margin:24px 0">
+                <a href="${resetLink}" style="background:#317E3D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;display:inline-block">Change my password</a>
+              </p>
+              <p style="color:#666;font-size:12px;line-height:1.5">Or copy this link: <a href="${resetLink}" style="color:#317E3D;word-break:break-all">${resetLink}</a></p>
               <p style="color:#999;font-size:12px;margin-top:32px">If you didn't request this, you can safely ignore this email.<br>— Kejani Homes</p>
             </div>
           `;
@@ -66,7 +71,7 @@ export const Route = createFileRoute("/api/public/password-reset")({
             to: email === "admin@kejanihomes.ke" ? "kejanihomeskenya@gmail.com" : email,
             subject: `${code} is your Kejani Homes reset code`,
             html,
-            text: `Your Kejani Homes password reset code is ${code}. It expires in 10 minutes.`,
+            text: `Your Kejani Homes password reset code is ${code}. It expires in 10 minutes. Change your password here: ${resetLink}`,
           });
 
           return Response.json({ ok: true });

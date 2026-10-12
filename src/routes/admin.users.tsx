@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Search, MoreHorizontal, CheckCircle2, PauseCircle, Ban, Trash2, MailCheck, Undo2 } from "lucide-react";
+import { Search, MoreHorizontal, CheckCircle2, PauseCircle, Ban, Trash2, MailCheck, Undo2, KeyRound } from "lucide-react";
 import { AdminShell, timeAgo } from "@/components/admin-shell";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/admin/users")({
   component: UsersPage,
 });
 
-type Action = "activate" | "deactivate" | "delete" | "ban" | "confirm";
+type Action = "activate" | "deactivate" | "delete" | "ban" | "confirm" | "force_reset";
 
 function UsersPage() {
   const { user, role: myRole } = useAuth();
@@ -77,6 +77,7 @@ function UsersPage() {
       if (r === null) return;
       reason = r || undefined;
     }
+    if (action === "force_reset" && !confirm(`Require ${u.email} to set a new password the next time they sign in?`)) return;
     if (action === "deactivate" && !confirm(`Deactivate ${u.email}? They won't be able to sign in.`)) return;
     try {
       await act({ data: { userId: u.id, action, reason } });
@@ -188,6 +189,7 @@ function UsersPage() {
                         ) : (
                           <DropdownMenuItem onClick={() => run(u, "deactivate")}><PauseCircle className="mr-2 h-4 w-4" />Deactivate</DropdownMenuItem>
                         )}
+                        <DropdownMenuItem onClick={() => run(u, "force_reset")}><KeyRound className="mr-2 h-4 w-4" />Reset password</DropdownMenuItem>
                         {statusOf(u) !== "banned" && (
                           <DropdownMenuItem onClick={() => run(u, "ban")} className="text-destructive"><Ban className="mr-2 h-4 w-4" />Ban email & phone</DropdownMenuItem>
                         )}

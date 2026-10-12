@@ -47,6 +47,85 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          landlord_id: string
+          last_message_at: string
+          property_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          landlord_id: string
+          last_message_at?: string
+          property_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          landlord_id?: string
+          last_message_at?: string
+          property_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          property_id: string | null
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          body?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          property_id?: string | null
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          property_id?: string | null
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       password_reset_codes: {
         Row: {
           attempts: number
@@ -85,6 +164,7 @@ export type Database = {
           email: string | null
           full_name: string | null
           id: string
+          must_reset_password: boolean
           phone: string | null
           updated_at: string
         }
@@ -95,6 +175,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id: string
+          must_reset_password?: boolean
           phone?: string | null
           updated_at?: string
         }
@@ -105,6 +186,7 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          must_reset_password?: boolean
           phone?: string | null
           updated_at?: string
         }
@@ -132,6 +214,7 @@ export type Database = {
           price_kes: number
           property_type: string
           rejection_reason: string | null
+          saves_count: number
           status: string
           title: string
           town: string
@@ -159,6 +242,7 @@ export type Database = {
           price_kes: number
           property_type: string
           rejection_reason?: string | null
+          saves_count?: number
           status?: string
           title: string
           town: string
@@ -186,6 +270,7 @@ export type Database = {
           price_kes?: number
           property_type?: string
           rejection_reason?: string | null
+          saves_count?: number
           status?: string
           title?: string
           town?: string
@@ -323,6 +408,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_conversation_member: {
+        Args: { _conv: string; _user: string }
         Returns: boolean
       }
     }

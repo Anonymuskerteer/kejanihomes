@@ -93,6 +93,35 @@ export function SessionGuard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, user?.id, role, loading]);
 
+  // Forced password reset (by admin) and mandatory landlord profile photo.
+  useEffect(() => {
+    if (loading || !user) return;
+    let cancelled = false;
+    supabase
+      .from("profiles")
+      .select("must_reset_password, avatar_url")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        if (data.must_reset_password) {
+          if (path !== "/reset-password") {
+            toast.info("Your administrator requires you to set a new password.");
+            navigate({ to: "/reset-password", replace: true });
+          }
+          return;
+        }
+        if (role === "landlord" && !data.avatar_url && path !== "/profile" && path !== "/auth") {
+          toast.info("Please add your profile photo before continuing.");
+          navigate({ to: "/profile", replace: true });
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [path, user?.id, role, loading]);
+
   // Inactivity timer.
   useEffect(() => {
     if (!user) return;

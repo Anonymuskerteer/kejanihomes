@@ -10,6 +10,8 @@ import {
   Star,
   ShieldCheck,
   Heart,
+  MessageCircle,
+  CircleCheck,
   Phone,
   Mail,
   CalendarDays,
@@ -316,6 +318,31 @@ function PropertyDetail() {
               <Button onClick={toggleSave} variant={saved ? "default" : "outline"} className="w-full">
                 <Heart className={`mr-1.5 h-4 w-4 ${saved ? "fill-current" : ""}`} /> {saved ? "Saved" : "Save home"}
               </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                {property.saves_count ?? 0} {property.saves_count === 1 ? "person has" : "people have"} saved this home
+              </p>
+              {user?.id !== property.owner_id && (
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/chat" search={{ property: property.id }}>
+                    <MessageCircle className="mr-1.5 h-4 w-4" /> Chat with landlord
+                  </Link>
+                </Button>
+              )}
+              {user?.id === property.owner_id && property.status !== "taken" && (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={async () => {
+                    if (!confirm("Mark this home as taken? It will be removed from public listings.")) return;
+                    const { error } = await supabase.from("properties").update({ status: "taken" }).eq("id", property.id);
+                    if (error) return toast.error(error.message);
+                    toast.success("Marked as taken");
+                    qc.invalidateQueries();
+                  }}
+                >
+                  <CircleCheck className="mr-1.5 h-4 w-4" /> Mark as taken
+                </Button>
+              )}
             </div>
           </aside>
         </div>

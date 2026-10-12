@@ -74,6 +74,8 @@ function AuthPage() {
         toast.success("Welcome back!");
         navigate({ to: "/dashboard" });
       } else {
+        if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/i.test(email.trim()))
+          throw new Error("Please use a valid Gmail or Yahoo email address.");
         if (!/^(\+?254|0)[17]\d{8}$/.test(phone.replace(/\s/g, ""))) throw new Error("A valid phone number is required");
         const res = await fetch("/api/public/signup", {
           method: "POST",
@@ -82,8 +84,15 @@ function AuthPage() {
         });
         const out = (await res.json()) as { ok: boolean; error?: string };
         if (!out.ok) throw new Error(out.error ?? "Could not create account");
-        toast.success("Check your email for your activation code.");
-        setAwaitingCode(true);
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        if (signInErr) throw signInErr;
+        toast.success("Welcome to Kejani Homes! We've sent a welcome email.");
+        if (role === "landlord") {
+          toast.info("Please add your profile photo to complete your account.");
+          navigate({ to: "/profile" });
+        } else {
+          navigate({ to: "/browse" });
+        }
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");

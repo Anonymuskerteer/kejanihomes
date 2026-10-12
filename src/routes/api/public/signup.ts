@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // POST /api/public/signup { email, password, full_name, phone, role, origin }
-// Creates an unconfirmed account and emails a 6-digit activation code + activation link via Gmail SMTP.
+// Creates an active account (Gmail/Yahoo only), sends a welcome email via Gmail SMTP; the client then signs in.
 export const Route = createFileRoute("/api/public/signup")({
   server: {
     handlers: {
@@ -15,7 +15,8 @@ export const Route = createFileRoute("/api/public/signup")({
           const phone = (b.phone ?? "").replace(/\s/g, "");
           const role = b.role === "landlord" ? "landlord" : "tenant";
           const origin = new URL(request.url).origin;
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("Enter a valid email.");
+          if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(email))
+            return fail("Please use a valid Gmail or Yahoo email address.");
           if (password.length < 6 || password.length > 72) return fail("Password must be 6–72 characters.");
           if (!full_name) return fail("Full name is required.");
           if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
@@ -28,16 +29,13 @@ export const Route = createFileRoute("/api/public/signup")({
             .or(`email.eq.${email},phone.ilike.%${normPhone}`);
           if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
 
-          const { data, error } = await supabaseAdmin.auth.admin.generateLink({
-            type: "signup",
+          const { error } = await supabaseAdmin.auth.admin.createUser({
             email,
             password,
-            options: { data: { full_name, phone, role }, redirectTo: `${origin}/activate` },
+            email_confirm: true,
+            user_metadata: { full_name, phone, role },
           });
-          if (error) return fail(error.message);
-          const link = data.properties?.action_link;
-          const code = data.properties?.email_otp;
-          if (!link || !code) return fail("Could not create activation code.", 500);
+          if (error) return fail(/already/i.test(error.message) ? "An account with this email already exists. Sign in instead." : error.message);
 
           const nodemailer = (await import("nodemailer")).default;
           const transporter = nodemailer.createTransport({
@@ -46,24 +44,28 @@ export const Route = createFileRoute("/api/public/signup")({
             secure: false,
             auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
           });
+          const safeName = full_name.replace(/[<>&"]/g, "");
           const html = `
             <div style="font-family:Arial,sans-serif;background:#fff;padding:32px;max-width:560px;margin:0 auto">
-              <h1 style="color:#317E3D;font-size:22px;margin:0 0 12px">Welcome to Kejani Homes, ${full_name.replace(/[<>&"]/g, "")}!</h1>
-              <p style="color:#333;font-size:15px;line-height:1.5">Activate your account with this code:</p>
-              <p style="text-align:center;margin:24px 0;font-size:34px;letter-spacing:10px;font-weight:700;color:#317E3D">${code}</p>
-              <p style="color:#333;font-size:15px;line-height:1.5">Or open the website directly with one tap:</p>
-              <p style="text-align:center;margin:24px 0">
-                <a href="${link}" style="background:#317E3D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;display:inline-block">Activate &amp; open Kejani Homes</a>
+              <h1 style="color:#317E3D;font-size:24px;margin:0 0 12px">Karibu Kejani Homes, ${safeName}!</h1>
+              <p style="color:#333;font-size:15px;line-height:1.6">Your ${role === "landlord" ? "landlord / agent" : "tenant"} account is ready.</p>
+              <p style="color:#333;font-size:15px;line-height:1.6">${
+                role === "landlord"
+                  ? "Add your profile photo, then list your first property so tenants across Mwea and Kenya can find it."
+                  : "Browse verified homes, save your favourites and chat directly with landlords."
+              }</p>
+              <p style="text-align:center;margin:28px 0">
+                <a href="${origin}/auth" style="background:#317E3D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;display:inline-block">Open Kejani Homes</a>
               </p>
-              <p style="color:#999;font-size:12px;margin-top:32px">If you didn't create this account, ignore this email.<br>— Kejani Homes</p>
+              <p style="color:#999;font-size:12px;margin-top:32px">— The Kejani Homes team</p>
             </div>`;
           await transporter.sendMail({
             from: process.env.SMTP_FROM!,
             to: email,
-            subject: `${code} is your Kejani Homes activation code`,
+            subject: "Welcome to Kejani Homes 🏡",
             html,
-            text: `Your Kejani Homes activation code is ${code}. Or activate here: ${link}`,
-          });
+            text: `Karibu Kejani Homes, ${safeName}! Your account is ready: ${origin}/auth`,
+          }).catch((e: unknown) => console.error("[signup] welcome email failed:", e));
           return Response.json({ ok: true });
         } catch (err) {
           console.error("[signup] failed:", err);

@@ -98,10 +98,11 @@ export interface PropertyRow {
   images: string[];
   contact_phone: string | null;
   contact_email: string | null;
-  status: string; // "pending" | "approved" | "rejected"
+  status: string; // "pending" | "approved" | "rejected" | "taken"
   rejection_reason: string | null;
   is_featured: boolean;
   views_count: number;
+  saves_count: number;
   created_at: string;
   updated_at: string;
 }

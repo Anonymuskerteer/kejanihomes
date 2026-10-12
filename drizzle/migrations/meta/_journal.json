@@ -22,6 +22,13 @@
       "when": 1791679601215,
       "tag": "0002_admin_users_logs",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791828319910,
+      "tag": "0003_chat_saves_reset",
+      "breakpoints": true
     }
   ]
 }

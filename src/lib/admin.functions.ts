@@ -57,7 +57,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
 
 const actionSchema = z.object({
   userId: z.string().uuid(),
-  action: z.enum(["activate", "deactivate", "delete", "ban", "confirm"]),
+  action: z.enum(["activate", "deactivate", "delete", "ban", "confirm", "force_reset"]),
   reason: z.string().max(300).optional(),
 });
 
@@ -89,6 +89,8 @@ export const adminUserAction = createServerFn({ method: "POST" })
         reason: data.reason ?? null,
         banned_by: context.userId,
       });
+    } else if (data.action === "force_reset") {
+      await supabaseAdmin.from("profiles").update({ must_reset_password: true }).eq("id", data.userId);
     } else if (data.action === "delete") {
       const { error } = await auth.deleteUser(data.userId);
       if (error) throw new Error(error.message);
@@ -97,7 +99,10 @@ export const adminUserAction = createServerFn({ method: "POST" })
     await supabaseAdmin.from("activity_logs").insert({
       actor_id: context.userId,
       category: "system",
-      action: `account_${data.action === "confirm" ? "confirmed" : data.action + (data.action.endsWith("e") ? "d" : "ned")}`,
+      action:
+        data.action === "force_reset"
+          ? "password_reset_forced"
+          : `account_${data.action === "confirm" ? "confirmed" : data.action + (data.action.endsWith("e") ? "d" : "ned")}`,
       target_type: "user",
       target_id: data.userId,
       details: { email: prof?.email ?? null, name: prof?.full_name ?? null, reason: data.reason ?? null },

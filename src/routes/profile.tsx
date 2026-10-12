@@ -153,6 +153,12 @@ function ProfilePage() {
         <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">Your profile</h1>
       </header>
 
+      {role === "landlord" && !profile?.avatar_url && (
+        <div className="mt-4 rounded-2xl border border-accent bg-accent/15 p-4 text-sm">
+          <strong>Profile photo required.</strong> Landlords and agents must add a clear profile photo so tenants
+          know who they're dealing with. Tap the camera on your picture below to upload one.
+        </div>
+      )}
       <div className="mt-6 grid gap-4 md:grid-cols-6">
         {/* Identity card — spans full width */}
         <section className="md:col-span-6 rounded-2xl border border-border bg-card p-6 shadow-card transition hover:shadow-elevated">

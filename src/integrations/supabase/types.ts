@@ -203,7 +203,6 @@ export type Database = {
           contact_phone: string | null
           county: string
           created_at: string
-          deposit_kes: number | null
           description: string
           id: string
           images: string[]
@@ -232,7 +231,6 @@ export type Database = {
           contact_phone?: string | null
           county: string
           created_at?: string
-          deposit_kes?: number | null
           description?: string
           id?: string
           images?: string[]
@@ -261,7 +259,6 @@ export type Database = {
           contact_phone?: string | null
           county?: string
           created_at?: string
-          deposit_kes?: number | null
           description?: string
           id?: string
           images?: string[]

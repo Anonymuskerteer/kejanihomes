@@ -373,6 +373,7 @@ function ListingForm({
             </div>
           ))}
           {existingImages.length + files.length < 10 && (
+<>
             <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary">
               <Camera className="h-5 w-5" /> Add
               <input type="file" accept="image/*" multiple onChange={onFiles} className="hidden" />
@@ -381,6 +382,7 @@ function ListingForm({
               <Camera className="h-5 w-5" /> Camera
               <input type="file" accept="image/*" capture="environment" onChange={onFiles} className="hidden" />
             </label>
+</>
           )}
         </div>
       </Card>

@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { SessionGuard } from "@/components/session-guard";
+import { AppBottomNav } from "@/components/app-bottom-nav";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -141,6 +142,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <SessionGuard />
       <Outlet />
+      <AppBottomNav />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );

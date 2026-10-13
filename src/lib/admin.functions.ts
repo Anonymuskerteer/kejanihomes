@@ -90,13 +90,18 @@ export const adminUserAction = createServerFn({ method: "POST" })
         banned_by: context.userId,
       });
     } else if (data.action === "force_reset") {
-      await supabaseAdmin.from("profiles").update({ must_reset_password: true }).eq("id", data.userId);
+      if (!prof) throw new Error("User profile could not be found.");
+      const { error } = await supabaseAdmin
+        .from("profiles")
+        .update({ must_reset_password: true })
+        .eq("id", data.userId);
+      if (error) throw new Error(`Could not require a password reset: ${error.message}`);
     } else if (data.action === "delete") {
       const { error } = await auth.deleteUser(data.userId);
       if (error) throw new Error(error.message);
     }
 
-    await supabaseAdmin.from("activity_logs").insert({
+    const { error: logError } = await supabaseAdmin.from("activity_logs").insert({
       actor_id: context.userId,
       category: "system",
       action:
@@ -107,6 +112,7 @@ export const adminUserAction = createServerFn({ method: "POST" })
       target_id: data.userId,
       details: { email: prof?.email ?? null, name: prof?.full_name ?? null, reason: data.reason ?? null },
     });
+    if (logError) throw new Error(`Action completed, but the activity log could not be saved: ${logError.message}`);
     return { ok: true };
   });
 

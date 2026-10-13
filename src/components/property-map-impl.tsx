@@ -30,6 +30,8 @@ interface Props {
 
 export function PropertyMap({ center, zoom = 13, markers = [], height = 360 }: Props) {
   const [mounted, setMounted] = useState(false);
+  const [tileError, setTileError] = useState(false);
+  const [tileAttempt, setTileAttempt] = useState(0);
   useEffect(() => setMounted(true), []);
   if (!mounted) {
     return (
@@ -42,8 +44,9 @@ export function PropertyMap({ center, zoom = 13, markers = [], height = 360 }: P
     );
   }
   return (
-    <div className="overflow-hidden rounded-2xl border border-border" style={{ height }}>
+    <div className="relative overflow-hidden rounded-2xl border border-border" style={{ height }}>
       <MapContainer
+        key={tileAttempt}
         center={center}
         zoom={zoom}
         scrollWheelZoom={false}
@@ -52,12 +55,14 @@ export function PropertyMap({ center, zoom = 13, markers = [], height = 360 }: P
         <LayersControl position="topright">
           <LayersControl.BaseLayer checked name="Map">
             <TileLayer
+              eventHandlers={{ tileerror: () => setTileError(true) }}
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="Satellite">
             <TileLayer
+              eventHandlers={{ tileerror: () => setTileError(true) }}
               attribution="Tiles &copy; Esri"
               maxZoom={19}
               url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -77,6 +82,24 @@ export function PropertyMap({ center, zoom = 13, markers = [], height = 360 }: P
           </Marker>
         ))}
       </MapContainer>
+      {tileError && (
+        <div
+          role="alert"
+          className="absolute inset-x-3 bottom-3 z-[1000] flex flex-wrap items-center justify-between gap-2 rounded-xl bg-background/95 p-3 text-xs shadow-card"
+        >
+          <span>Map tiles couldn't load. Check your internet connection.</span>
+          <button
+            type="button"
+            className="font-semibold text-primary underline"
+            onClick={() => {
+              setTileError(false);
+              setTileAttempt((attempt) => attempt + 1);
+            }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
     </div>
   );
 }

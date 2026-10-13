@@ -149,9 +149,8 @@ function ListingForm({
     property_type: existing?.property_type ?? "Bedsitter",
     listing_type: existing?.listing_type ?? "rent",
     price_kes: existing?.price_kes ?? 0,
+    deposit_kes: existing?.deposit_kes ?? "",
     bedrooms: existing?.bedrooms ?? 0,
-    bathrooms: existing?.bathrooms ?? 1,
-    area_sqm: (existing?.area_sqm ?? "") as string | number,
     county: existing?.county ?? "Kirinyaga",
     town: existing?.town ?? "Mwea",
     address: existing?.address ?? "",
@@ -208,9 +207,8 @@ function ListingForm({
         property_type: form.property_type,
         listing_type: form.listing_type,
         price_kes: Number(form.price_kes),
+        deposit_kes: form.deposit_kes === "" ? null : Number(form.deposit_kes),
         bedrooms: Number(form.bedrooms),
-        bathrooms: Number(form.bathrooms),
-        area_sqm: form.area_sqm ? Number(form.area_sqm) : null,
         county: form.county,
         town: form.town,
         address: form.address || null,
@@ -281,18 +279,15 @@ function ListingForm({
             </Select>
           </Field>
         </div>
-        <div className="grid gap-4 sm:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Price (KES/mo)">
             <Input required type="number" min={0} value={form.price_kes} onChange={(e) => onChange("price_kes", Number(e.target.value))} />
           </Field>
+          <Field label="Deposit (KES)">
+            <Input type="number" min={0} value={form.deposit_kes} onChange={(e) => onChange("deposit_kes", e.target.value === "" ? "" : Number(e.target.value))} />
+          </Field>
           <Field label="Bedrooms">
             <Input type="number" min={0} value={form.bedrooms} onChange={(e) => onChange("bedrooms", Number(e.target.value))} />
-          </Field>
-          <Field label="Bathrooms">
-            <Input type="number" min={0} value={form.bathrooms} onChange={(e) => onChange("bathrooms", Number(e.target.value))} />
-          </Field>
-          <Field label="Area (m²)">
-            <Input type="number" min={0} value={form.area_sqm} onChange={(e) => onChange("area_sqm", e.target.value)} />
           </Field>
         </div>
       </Card>

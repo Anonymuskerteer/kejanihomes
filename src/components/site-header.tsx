@@ -1,31 +1,15 @@
-import { Link, useNavigate } from "@tanstack/react-router";
-import { Home, Menu, Plus, User, LayoutDashboard, LogOut, Search, Heart } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { Home, Menu, Plus, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/use-auth";
-import { NavIcons } from "@/components/nav-icons";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  const { user, role, signOut } = useAuth();
-  const navigate = useNavigate();
-
-  const doSignOut = async () => {
-    await signOut();
-    navigate({ to: "/" });
-  };
+  const { user, role } = useAuth();
 
   const isLandlord = role === "landlord" || role === "admin";
 
-  // Logged-in users: header collapses to logo + hamburger only.
   if (user) {
     return (
       <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/85 backdrop-blur">
@@ -39,7 +23,6 @@ export function SiteHeader() {
             </span>
           </Link>
 
-          <NavIcons role={role} onSignOut={signOut} />
         </div>
       </header>
     );

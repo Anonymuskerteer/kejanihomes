@@ -41,6 +41,8 @@ function ClickToPlace({ onChange }: { onChange: Props["onChange"] }) {
 export function LocationPicker({ value, onChange, height = 320 }: Props) {
   const [mounted, setMounted] = useState(false);
   const [locating, setLocating] = useState(false);
+  const [tileError, setTileError] = useState(false);
+  const [tileAttempt, setTileAttempt] = useState(0);
   const hasValue = value.lat != null && value.lng != null;
   const center: [number, number] = hasValue
     ? [value.lat as number, value.lng as number]
@@ -96,17 +98,19 @@ export function LocationPicker({ value, onChange, height = 320 }: Props) {
           Use my location
         </Button>
       </div>
-      <div className="overflow-hidden rounded-2xl border border-border" style={{ height }}>
-        <MapContainer center={center} zoom={hasValue ? 15 : 12} style={{ height: "100%", width: "100%" }}>
+      <div className="relative overflow-hidden rounded-2xl border border-border" style={{ height }}>
+        <MapContainer key={tileAttempt} center={center} zoom={hasValue ? 15 : 12} style={{ height: "100%", width: "100%" }}>
           <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Map">
               <TileLayer
+                eventHandlers={{ tileerror: () => setTileError(true) }}
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
             </LayersControl.BaseLayer>
             <LayersControl.BaseLayer name="Satellite">
               <TileLayer
+                eventHandlers={{ tileerror: () => setTileError(true) }}
                 attribution="Tiles &copy; Esri"
                 maxZoom={19}
                 url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
@@ -130,6 +134,24 @@ export function LocationPicker({ value, onChange, height = 320 }: Props) {
             </>
           )}
         </MapContainer>
+        {tileError && (
+          <div
+            role="alert"
+            className="absolute inset-x-3 bottom-3 z-[1000] flex flex-wrap items-center justify-between gap-2 rounded-xl bg-background/95 p-3 text-xs shadow-card"
+          >
+            <span>Map tiles couldn't load. Check your internet connection.</span>
+            <button
+              type="button"
+              className="font-semibold text-primary underline"
+              onClick={() => {
+                setTileError(false);
+                setTileAttempt((attempt) => attempt + 1);
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
       </div>
       {hasValue && (
         <p className="text-xs text-muted-foreground">

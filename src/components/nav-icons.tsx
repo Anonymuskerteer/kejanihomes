@@ -1,9 +1,9 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Heart, LayoutDashboard, LogOut, Plus, Search, User, ShieldCheck, Users, BarChart3, ScrollText } from "lucide-react";
+import { Heart, LayoutDashboard, LogOut, Plus, Search, User, ShieldCheck, Users, BarChart3, ScrollText, MessagesSquare } from "lucide-react";
 import type { AppRole } from "@/lib/use-auth";
 
 interface Item {
-  to: "/dashboard" | "/browse" | "/wishlist" | "/profile" | "/list-property" | "/admin/users" | "/admin/analytics" | "/admin/logs";
+  to: "/dashboard" | "/browse" | "/wishlist" | "/profile" | "/list-property" | "/admin/users" | "/admin/analytics" | "/admin/logs" | "/chat";
   label: string;
   icon: typeof Heart;
 }
@@ -28,6 +28,7 @@ export function NavIcons({
           { to: "/admin/analytics", label: "Analytics", icon: BarChart3 },
           { to: "/admin/logs", label: "Logs", icon: ScrollText },
           { to: "/profile", label: "Profile", icon: User },
+          { to: "/chat", label: "Messages", icon: MessagesSquare },
         ]
       : role === "landlord"
         ? [
@@ -35,11 +36,13 @@ export function NavIcons({
             { to: "/browse", label: "Browse", icon: Search },
             { to: "/list-property", label: "List property", icon: Plus },
             { to: "/profile", label: "Profile", icon: User },
+            { to: "/chat", label: "Messages", icon: MessagesSquare },
           ]
         : [
             { to: "/browse", label: "Browse", icon: Search },
             { to: "/wishlist", label: "Saved", icon: Heart },
             { to: "/profile", label: "Profile", icon: User },
+            { to: "/chat", label: "Messages", icon: MessagesSquare },
           ];
 
   return (

@@ -35,7 +35,22 @@ export const Route = createFileRoute("/api/public/signup")({
             email_confirm: true,
             user_metadata: { full_name, phone, role },
           });
-          if (error) return fail(/already/i.test(error.message) ? "An account with this email already exists. Sign in instead." : error.message);
+          if (error) {
+            if (
+              error.code === "email_exists" ||
+              /already|exists|duplicate/i.test(error.message)
+            ) {
+              return Response.json(
+                {
+                  ok: false,
+                  code: "EMAIL_ALREADY_REGISTERED",
+                  error: "This email is already registered. Sign in or reset your password.",
+                },
+                { status: 409 },
+              );
+            }
+            return fail(error.message);
+          }
 
           const nodemailer = (await import("nodemailer")).default;
           const transporter = nodemailer.createTransport({
@@ -59,14 +74,20 @@ export const Route = createFileRoute("/api/public/signup")({
               </p>
               <p style="color:#999;font-size:12px;margin-top:32px">— The Kejani Homes team</p>
             </div>`;
-          await transporter.sendMail({
-            from: process.env.SMTP_FROM!,
-            to: email,
-            subject: "Welcome to Kejani Homes 🏡",
-            html,
-            text: `Karibu Kejani Homes, ${safeName}! Your account is ready: ${origin}/auth`,
-          }).catch((e: unknown) => console.error("[signup] welcome email failed:", e));
-          return Response.json({ ok: true });
+          let welcomeEmailSent = false;
+          try {
+            await transporter.sendMail({
+              from: process.env.SMTP_FROM!,
+              to: email,
+              subject: "Welcome to Kejani Homes 🏡",
+              html,
+              text: `Karibu Kejani Homes, ${safeName}! Your account is ready: ${origin}/auth`,
+            });
+            welcomeEmailSent = true;
+          } catch (e) {
+            console.error("[signup] welcome email failed:", e);
+          }
+          return Response.json({ ok: true, welcomeEmailSent });
         } catch (err) {
           console.error("[signup] failed:", err);
           return fail("Could not create account. Try again.", 500);

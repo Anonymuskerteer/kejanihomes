@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ComponentProps } from "react";
 import type { LocationPicker as Impl } from "./location-picker-impl";
+import { MapLoadBoundary } from "./map-load-boundary";
 
 // Leaflet touches `window` on import, so load it only in the browser.
 const LazyPicker = lazy(() => import("./location-picker-impl").then((m) => ({ default: m.LocationPicker })));
@@ -13,5 +14,11 @@ export function LocationPicker(props: ComponentProps<typeof Impl>) {
     </div>
   );
   if (!mounted) return fallback;
-  return <Suspense fallback={fallback}><LazyPicker {...props} /></Suspense>;
+  return (
+    <MapLoadBoundary height={props.height ?? 320}>
+      <Suspense fallback={fallback}>
+        <LazyPicker {...props} />
+      </Suspense>
+    </MapLoadBoundary>
+  );
 }

@@ -82,17 +82,29 @@ function AuthPage() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
         });
-        const out = (await res.json()) as { ok: boolean; error?: string };
-        if (!out.ok) throw new Error(out.error ?? "Could not create account");
+        const out = (await res.json()) as {
+          ok: boolean;
+          code?: string;
+          error?: string;
+          welcomeEmailSent?: boolean;
+        };
+        if (!out.ok) {
+          if (out.code === "EMAIL_ALREADY_REGISTERED") {
+            throw new Error("This email is already registered. Sign in or reset your password.");
+          }
+          throw new Error(out.error ?? "Could not create account");
+        }
         const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
         if (signInErr) throw signInErr;
-        toast.success("Welcome to Kejani Homes! We've sent a welcome email.");
+        if (out.welcomeEmailSent) {
+          toast.success("Welcome to Kejani Homes! We've sent a welcome email.");
+        } else {
+          toast.info("Your account is ready, but we couldn't send the welcome email. You can continue using Kejani Homes.");
+        }
         if (role === "landlord") {
           toast.info("Please add your profile photo to complete your account.");
-          navigate({ to: "/profile" });
-        } else {
-          navigate({ to: "/browse" });
         }
+        navigate({ to: "/getting-started", search: { role } });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Authentication failed");

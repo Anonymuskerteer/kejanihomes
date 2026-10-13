@@ -4,8 +4,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import {
   BedDouble,
-  Bath,
-  Maximize,
   MapPin,
   Star,
   ShieldCheck,
@@ -138,7 +136,12 @@ function PropertyDetail() {
             </div>
           </div>
           <div className="text-right">
-            <div className="font-display text-3xl font-bold text-primary">{formatKES(property.price_kes)}<span className="text-sm font-medium text-muted-foreground">/mo</span></div>
+            <div className="flex flex-wrap items-baseline justify-end gap-x-3 gap-y-1">
+              <div className="font-display text-3xl font-bold text-primary">{formatKES(property.price_kes)}<span className="text-sm font-medium text-muted-foreground">/mo</span></div>
+              <div className="text-sm font-medium text-muted-foreground">
+                Deposit: {property.deposit_kes == null ? "Not specified" : formatKES(property.deposit_kes)}
+              </div>
+            </div>
             <div className="mt-1 inline-flex items-center gap-1 text-sm">
               <Star className="h-4 w-4 fill-accent text-accent" />
               {rating > 0 ? rating.toFixed(1) : "—"}
@@ -162,10 +165,8 @@ function PropertyDetail() {
 
         <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
           <section className="space-y-8">
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3">
               <Spec icon={BedDouble} label="Bedrooms" value={property.bedrooms || "Studio"} />
-              <Spec icon={Bath} label="Bathrooms" value={property.bathrooms} />
-              <Spec icon={Maximize} label="Area" value={property.area_sqm ? `${property.area_sqm} m²` : "—"} />
               <Spec icon={CalendarDays} label="Listed" value={new Date(property.created_at).toLocaleDateString()} />
             </div>
 
@@ -231,9 +232,60 @@ function PropertyDetail() {
                 </>
               )}
             </div>
+          </section>
 
-
-            <div>
+          <aside className="space-y-4">
+            <div className="sticky top-20 space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card">
+              <div className="text-sm font-semibold">Contact landlord</div>
+              {user ? (
+                <div className="space-y-2 text-sm">
+                  {property.contact_phone && (
+                    <a href={`tel:${property.contact_phone}`} className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-primary-foreground hover:bg-primary/90">
+                      <Phone className="h-4 w-4" /> {property.contact_phone}
+                    </a>
+                  )}
+                  {property.contact_email && (
+                    <a href={`mailto:${property.contact_email}`} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 hover:bg-secondary">
+                      <Mail className="h-4 w-4" /> {property.contact_email}
+                    </a>
+                  )}
+                  {!property.contact_phone && !property.contact_email && (
+                    <p className="text-xs text-muted-foreground">No contact details provided.</p>
+                  )}
+                </div>
+              ) : (
+                <Button asChild className="w-full"><Link to="/auth">Sign in to view contact</Link></Button>
+              )}
+              <Button onClick={toggleSave} variant={saved ? "default" : "outline"} className="w-full">
+                <Heart className={`mr-1.5 h-4 w-4 ${saved ? "fill-current" : ""}`} /> {saved ? "Saved" : "Save home"}
+              </Button>
+              <p className="text-center text-xs text-muted-foreground">
+                {property.saves_count ?? 0} {property.saves_count === 1 ? "person has" : "people have"} saved this home
+              </p>
+              {user?.id !== property.owner_id && (
+                <Button asChild variant="outline" className="w-full">
+                  <Link to="/chat" search={{ property: property.id }}>
+                    <MessageCircle className="mr-1.5 h-4 w-4" /> Chat with landlord
+                  </Link>
+                </Button>
+              )}
+              {user?.id === property.owner_id && property.status !== "taken" && (
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={async () => {
+                    if (!confirm("Mark this home as taken? It will be removed from public listings.")) return;
+                    const { error } = await supabase.from("properties").update({ status: "taken" }).eq("id", property.id);
+                    if (error) return toast.error(error.message);
+                    toast.success("Marked as taken");
+                    qc.invalidateQueries();
+                  }}
+                >
+                  <CircleCheck className="mr-1.5 h-4 w-4" /> Mark as taken
+                </Button>
+              )}
+            </div>
+            <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
               <h2 className="font-display text-xl font-bold">Reviews</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Every review needs a rating and at least one photo — and is checked by our team before going public.
@@ -290,60 +342,7 @@ function PropertyDetail() {
                   ))
                 )}
               </div>
-            </div>
-          </section>
-
-          <aside className="space-y-4">
-            <div className="sticky top-20 space-y-3 rounded-2xl border border-border bg-card p-5 shadow-card">
-              <div className="text-sm font-semibold">Contact landlord</div>
-              {user ? (
-                <div className="space-y-2 text-sm">
-                  {property.contact_phone && (
-                    <a href={`tel:${property.contact_phone}`} className="flex items-center gap-2 rounded-lg bg-primary px-3 py-2.5 text-primary-foreground hover:bg-primary/90">
-                      <Phone className="h-4 w-4" /> {property.contact_phone}
-                    </a>
-                  )}
-                  {property.contact_email && (
-                    <a href={`mailto:${property.contact_email}`} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 hover:bg-secondary">
-                      <Mail className="h-4 w-4" /> {property.contact_email}
-                    </a>
-                  )}
-                  {!property.contact_phone && !property.contact_email && (
-                    <p className="text-xs text-muted-foreground">No contact details provided.</p>
-                  )}
-                </div>
-              ) : (
-                <Button asChild className="w-full"><Link to="/auth">Sign in to view contact</Link></Button>
-              )}
-              <Button onClick={toggleSave} variant={saved ? "default" : "outline"} className="w-full">
-                <Heart className={`mr-1.5 h-4 w-4 ${saved ? "fill-current" : ""}`} /> {saved ? "Saved" : "Save home"}
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                {property.saves_count ?? 0} {property.saves_count === 1 ? "person has" : "people have"} saved this home
-              </p>
-              {user?.id !== property.owner_id && (
-                <Button asChild variant="outline" className="w-full">
-                  <Link to="/chat" search={{ property: property.id }}>
-                    <MessageCircle className="mr-1.5 h-4 w-4" /> Chat with landlord
-                  </Link>
-                </Button>
-              )}
-              {user?.id === property.owner_id && property.status !== "taken" && (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={async () => {
-                    if (!confirm("Mark this home as taken? It will be removed from public listings.")) return;
-                    const { error } = await supabase.from("properties").update({ status: "taken" }).eq("id", property.id);
-                    if (error) return toast.error(error.message);
-                    toast.success("Marked as taken");
-                    qc.invalidateQueries();
-                  }}
-                >
-                  <CircleCheck className="mr-1.5 h-4 w-4" /> Mark as taken
-                </Button>
-              )}
-            </div>
+            </section>
           </aside>
         </div>
       </main>

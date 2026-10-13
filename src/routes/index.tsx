@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PropertyCard } from "@/components/property-card";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/use-auth";
 import type { PropertyRow } from "@/lib/properties";
 import heroImg from "@/assets/hero-home.jpg";
 
@@ -24,6 +25,7 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+  const { user } = useAuth();
   const { data: featured = [] } = useQuery({
     queryKey: ["properties", "featured"],
     queryFn: async (): Promise<PropertyRow[]> => {
@@ -54,7 +56,7 @@ function HomePage() {
             <EmptyState text="No listings yet. Be the first landlord to publish on Kejani Homes." />
           ) : (
             <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.map((p) => <PropertyCard key={p.id} property={p} />)}
+              {featured.map((p) => <PropertyCard key={p.id} property={p} userId={user?.id} />)}
             </div>
           )}
         </section>

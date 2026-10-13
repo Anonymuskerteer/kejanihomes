@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState, type ComponentProps } from "react";
 import type { PropertyMap as Impl } from "./property-map-impl";
+import { MapLoadBoundary } from "./map-load-boundary";
 export type { MarkerPoint } from "./property-map-impl";
 
 // Leaflet touches `window` on import, so load it only in the browser.
@@ -14,5 +15,11 @@ export function PropertyMap(props: ComponentProps<typeof Impl>) {
     </div>
   );
   if (!mounted) return fallback;
-  return <Suspense fallback={fallback}><LazyMap {...props} /></Suspense>;
+  return (
+    <MapLoadBoundary height={props.height ?? 360}>
+      <Suspense fallback={fallback}>
+        <LazyMap {...props} />
+      </Suspense>
+    </MapLoadBoundary>
+  );
 }

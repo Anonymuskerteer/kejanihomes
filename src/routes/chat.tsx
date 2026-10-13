@@ -144,7 +144,7 @@ function ChatPage() {
   const active = convs.find((c) => c.id === activeId) ?? null;
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col">
       <SiteHeader />
       <div className="container-page grid min-h-0 flex-1 gap-4 py-4 md:grid-cols-[320px_1fr]">
         <aside className={`min-h-0 overflow-y-auto rounded-2xl border border-border bg-card ${active ? "hidden md:block" : ""}`}>

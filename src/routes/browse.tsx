@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
-import { MapPin, SlidersHorizontal, X, LayoutGrid, Map as MapIcon } from "lucide-react";
+import { MapPin, SlidersHorizontal, X, LayoutGrid, Map as MapIcon, Search, Home } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -22,7 +23,6 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { PropertyCard } from "@/components/property-card";
 import { PropertyMap } from "@/components/property-map";
 import { TenantShell } from "@/components/tenant-shell";
@@ -265,7 +265,7 @@ function BrowsePage() {
         </p>
       </div>
       <div className="flex items-center gap-2">
-        {filterSheet}
+        {!isTenant && filterSheet}
         <div className="hidden rounded-xl border border-border bg-card p-1 md:inline-flex">
           <button
             onClick={() => setView("grid")}
@@ -303,16 +303,15 @@ function BrowsePage() {
       <p className="mt-1 text-sm text-muted-foreground">Try widening your filters or browsing all counties.</p>
       <Button onClick={reset} className="mt-4">Reset filters</Button>
     </div>
-  ) : isTenant ? (
-    <BentoGrid properties={filtered} ratingMap={ratingMap} />
   ) : (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
       {filtered.map((p) => (
         <PropertyCard
           key={p.id}
           property={p}
           averageRating={ratingMap[p.id]?.avg}
           reviewsCount={ratingMap[p.id]?.count}
+          userId={user?.id}
         />
       ))}
     </div>
@@ -320,6 +319,35 @@ function BrowsePage() {
 
   const body = (
     <div className="container-page py-6">
+      {isTenant && (
+        <div className="mb-6 flex min-w-0 items-center gap-2 sm:gap-3">
+          <Link to="/browse" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
+              <Home className="h-5 w-5" />
+            </span>
+            <span className="font-display text-sm font-bold tracking-tight sm:text-lg">
+              Kejani<span className="text-primary">Homes</span>
+            </span>
+          </Link>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate({ search: (s: z.infer<typeof browseSearch>) => ({ ...s, q: q || undefined }) });
+            }}
+            className="relative min-w-0 flex-1"
+          >
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Search homes"
+              aria-label="Search properties"
+              className="h-11 rounded-xl bg-card pl-9 text-sm"
+            />
+          </form>
+          {filterSheet}
+        </div>
+      )}
       {heading}
       <section className="mt-6">
         {results}
@@ -334,14 +362,7 @@ function BrowsePage() {
 
   if (isTenant) {
     return (
-      <TenantShell
-        search={{
-          value: q,
-          onChange: setQ,
-          placeholder: "Search listings",
-          onSubmit: () => navigate({ search: (s: z.infer<typeof browseSearch>) => ({ ...s, q: q || undefined }) }),
-        }}
-      >
+      <TenantShell hideTopBar>
         {body}
       </TenantShell>
     );
@@ -351,87 +372,6 @@ function BrowsePage() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="flex-1">{body}</main>
-      <SiteFooter />
     </div>
-  );
-}
-
-function BentoGrid({
-  properties,
-  ratingMap,
-}: {
-  properties: PropertyRow[];
-  ratingMap: Record<string, { avg: number; count: number }>;
-}) {
-  return (
-    <div className="grid auto-rows-[220px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-4">
-      {properties.map((p, i) => {
-        // Bento pattern: every 7th tile is a large hero (2x2 on desktop)
-        const large = i % 7 === 0;
-        const wide = i % 5 === 3;
-        const cls = large
-          ? "col-span-2 row-span-2"
-          : wide
-            ? "col-span-2 row-span-1"
-            : "col-span-1 row-span-1";
-        return (
-          <div key={p.id} className={cls}>
-            <BentoTile
-              property={p}
-              rating={ratingMap[p.id]}
-              variant={large ? "large" : wide ? "wide" : "small"}
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function BentoTile({
-  property: p,
-  rating,
-  variant,
-}: {
-  property: PropertyRow;
-  rating?: { avg: number; count: number };
-  variant: "large" | "wide" | "small";
-}) {
-  const cover = p.images[0] || "/placeholder.svg";
-  return (
-    <Link
-      to="/property/$id"
-      params={{ id: p.id }}
-      className="group relative block h-full w-full overflow-hidden rounded-2xl border border-border bg-card shadow-card transition hover:-translate-y-0.5 hover:shadow-elevated"
-    >
-      <img
-        src={cover}
-        alt={p.title}
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-foreground/85 via-foreground/20 to-transparent" />
-      <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
-        <span className="rounded-full bg-background/95 px-2 py-0.5 text-[10px] font-semibold text-foreground shadow-soft">
-          {p.property_type}
-        </span>
-        {rating?.count ? (
-          <span className="rounded-full bg-accent/95 px-2 py-0.5 text-[10px] font-bold text-accent-foreground shadow-soft">
-            ★ {rating.avg.toFixed(1)}
-          </span>
-        ) : null}
-      </div>
-      <div className="absolute inset-x-3 bottom-3 text-background">
-        <h3 className={`line-clamp-2 font-display font-bold ${variant === "large" ? "text-lg md:text-xl" : "text-sm"}`}>
-          {p.title}
-        </h3>
-        <div className={`mt-1 flex items-center justify-between gap-2 ${variant === "small" ? "text-[11px]" : "text-xs"}`}>
-          <span className="line-clamp-1 opacity-90">{p.town}, {p.county}</span>
-          <span className="rounded-md bg-primary px-2 py-0.5 font-bold text-primary-foreground">
-            KES {p.price_kes.toLocaleString()}
-          </span>
-        </div>
-      </div>
-    </Link>
   );
 }

@@ -86,9 +86,8 @@ export interface PropertyRow {
   property_type: string;
   listing_type: string;
   price_kes: number;
+  deposit_kes: number | null;
   bedrooms: number;
-  bathrooms: number;
-  area_sqm: number | null;
   county: string;
   town: string;
   address: string | null;

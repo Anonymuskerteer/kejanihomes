@@ -1,7 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Home } from "lucide-react";
 
 export function SiteFooter() {
+  const isHomePage = useRouterState({ select: (state) => state.location.pathname === "/" });
+  if (!isHomePage) return null;
+
   return (
     <footer className="mt-24 border-t border-border/60 bg-secondary/40">
       <div className="container-page grid gap-10 py-12 md:grid-cols-4">
@@ -14,7 +17,7 @@ export function SiteFooter() {
             Find your next home in Kenya. Verified listings, real photos and direct contact with landlords.
           </p>
         </div>
-        <FooterCol title="Discover" links={[["Browse properties", "/browse"], ["Popular locations", "/browse"], ["Saved homes", "/saved"]]} />
+        <FooterCol title="Discover" links={[["Browse properties", "/browse"], ["Getting started", "/getting-started"], ["Saved homes", "/saved"]]} />
         <FooterCol title="For landlords" links={[["List a property", "/list-property"], ["Landlord dashboard", "/dashboard"], ["How it works", "/how-it-works"]]} />
         <FooterCol title="Company" links={[["About", "/how-it-works"], ["Contact", "/how-it-works"], ["Trust & safety", "/how-it-works"]]} />
       </div>

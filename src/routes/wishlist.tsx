@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Heart, Trash2, MapPin, BedDouble, Bath, Star } from "lucide-react";
+import { Heart, Trash2, MapPin, BedDouble, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TenantShell } from "@/components/tenant-shell";
 import { supabase } from "@/integrations/supabase/client";
@@ -141,8 +141,15 @@ function WishlistPage() {
                           <Star className="h-3 w-3 fill-current" /> {r.avg.toFixed(1)} ({r.count})
                         </span>
                       ) : null}
-                      <div className="absolute bottom-3 left-3 rounded-xl bg-foreground/85 px-3 py-1.5 text-sm font-bold text-background backdrop-blur">
-                        {formatKES(p.price_kes)}<span className="ml-1 text-[10px] font-medium text-background/70">/mo</span>
+                      <div className="absolute bottom-3 left-3 flex max-w-[calc(100%-3.5rem)] flex-wrap items-center gap-1.5">
+                        <span className="rounded-xl bg-foreground/85 px-3 py-1.5 text-sm font-bold text-background backdrop-blur">
+                          {formatKES(p.price_kes)}<span className="ml-1 text-[10px] font-medium text-background/70">/mo</span>
+                        </span>
+                        {p.deposit_kes != null && (
+                          <span className="rounded-xl bg-background/90 px-2.5 py-1.5 text-[10px] font-semibold text-foreground backdrop-blur">
+                            Deposit {formatKES(p.deposit_kes)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="p-4">
@@ -154,7 +161,6 @@ function WishlistPage() {
                       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                         <div className="flex items-center gap-3">
                           <span className="inline-flex items-center gap-1"><BedDouble className="h-3.5 w-3.5" />{p.bedrooms || "Studio"}</span>
-                          <span className="inline-flex items-center gap-1"><Bath className="h-3.5 w-3.5" />{p.bathrooms}</span>
                         </div>
                         {!r?.count && <span className="text-muted-foreground/70">No reviews yet</span>}
                       </div>

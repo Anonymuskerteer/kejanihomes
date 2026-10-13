@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/password-input";
-import { useServerFn } from "@tanstack/react-start";
-import { completeForcedReset } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
@@ -22,7 +20,6 @@ function ResetPasswordPage() {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [busy, setBusy] = useState(false);
-  const setPassword = useServerFn(completeForcedReset);
 
   useEffect(() => {
     // Supabase places the recovery token in the URL hash and emits a PASSWORD_RECOVERY event.
@@ -42,7 +39,21 @@ function ResetPasswordPage() {
     if (pw !== pw2) return toast.error("Passwords don't match");
     setBusy(true);
     try {
-      await setPassword({ data: { password: pw } });
+      const { error: passwordError } = await supabase.auth.updateUser({ password: pw });
+      if (passwordError) throw passwordError;
+
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({ must_reset_password: false })
+          .eq("id", authData.user.id);
+        if (profileError) {
+          console.error("[reset-password] password updated but could not clear forced-reset flag:", profileError);
+          toast.error("Your password was updated, but we could not complete the account update. Please contact support.");
+          return;
+        }
+      }
       toast.success("Password updated. You're signed in.");
       navigate({ to: "/dashboard" });
     } catch (err) {

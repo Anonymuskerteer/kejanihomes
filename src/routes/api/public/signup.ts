@@ -1,4 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+<<<<<<< Updated upstream
+=======
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
+import { getServerAppOrigin } from "@/lib/app-url";
+>>>>>>> Stashed changes
 
 // POST /api/public/signup { email, password, full_name, phone, role, origin }
 // Creates an active account (Gmail/Yahoo only), sends a welcome email via Gmail SMTP; the client then signs in.
@@ -14,7 +20,7 @@ export const Route = createFileRoute("/api/public/signup")({
           const full_name = (b.full_name ?? "").trim().slice(0, 100);
           const phone = (b.phone ?? "").replace(/\s/g, "");
           const role = b.role === "landlord" ? "landlord" : "tenant";
-          const origin = new URL(request.url).origin;
+          const origin = getServerAppOrigin(request.url);
           if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(email))
             return fail("Please use a valid Gmail or Yahoo email address.");
           if (password.length < 6 || password.length > 72) return fail("Password must be 6–72 characters.");

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getServerAppOrigin } from "@/lib/app-url";
 
 // POST /api/public/resend-activation { email }
 // Re-sends a 6-digit activation code to an account that hasn't been activated yet. Always returns ok.
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/api/public/resend-activation")({
           const b = (await request.json().catch(() => ({}))) as { email?: string };
           const email = (b.email ?? "").trim().toLowerCase();
           if (!/^[^\s@,()]+@[^\s@,()]+\.[^\s@,()]+$/.test(email)) return Response.json({ ok: true });
-          const origin = new URL(request.url).origin;
+          const origin = getServerAppOrigin(request.url);
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: prof } = await supabaseAdmin.from("profiles").select("id, full_name").ilike("email", email).maybeSingle();
@@ -29,10 +30,11 @@ export const Route = createFileRoute("/api/public/resend-activation")({
           if (!link || !code) return Response.json({ ok: true });
 
           const nodemailer = (await import("nodemailer")).default;
+          const smtpPort = Number(process.env.SMTP_PORT ?? 587);
           const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST!,
-            port: Number(process.env.SMTP_PORT ?? 587),
-            secure: false,
+            port: smtpPort,
+            secure: smtpPort === 465,
             auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
           });
           await transporter.sendMail({

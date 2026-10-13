@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/password-input";
 import { supabase } from "@/integrations/supabase/client";
+import { getBrowserAppOrigin } from "@/lib/app-url";
 
 const searchSchema = z.object({
   mode: z.enum(["signin", "signup"]).optional(),
@@ -35,10 +36,17 @@ function AuthPage() {
   const [code, setCode] = useState("");
 
   const resend = async () => {
+<<<<<<< Updated upstream
     await fetch("/api/public/resend-activation", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email: email.trim().toLowerCase() }),
+=======
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: `${getBrowserAppOrigin()}/activate` },
+>>>>>>> Stashed changes
     });
     toast.success("A new activation code has been sent to your email.");
   };
@@ -82,9 +90,76 @@ function AuthPage() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
         });
+<<<<<<< Updated upstream
         const out = (await res.json()) as { ok: boolean; error?: string };
         if (!out.ok) throw new Error(out.error ?? "Could not create account");
         const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+=======
+        let out: {
+          ok: boolean;
+          code?: string;
+          error?: string;
+          welcomeEmailSent?: boolean;
+          confirmationRequired?: boolean;
+        };
+        try {
+          out = await res.json();
+        } catch {
+          throw new Error("The sign-up service returned an invalid response. Please try again later.");
+        }
+        if (!res.ok || !out.ok) {
+          if (out.code === "EMAIL_ALREADY_REGISTERED") {
+            throw new Error("This email is already registered. Sign in or reset your password.");
+          }
+          if (out.code !== "SIGNUP_NOT_CONFIGURED") {
+            throw new Error(out.error ?? "Could not create account. Please try again.");
+          }
+
+          const { data, error } = await supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+            options: {
+              data: {
+                full_name: fullName.trim(),
+                phone: phone.replace(/\s/g, ""),
+                role,
+              },
+              emailRedirectTo: `${getBrowserAppOrigin()}/activate`,
+            },
+          });
+          if (error) {
+            if (
+              error.code === "user_already_exists" ||
+              /already registered|already exists/i.test(error.message)
+            ) {
+              throw new Error("This email is already registered. Sign in or reset your password.");
+            }
+            throw error;
+          }
+          if (data.user?.identities?.length === 0) {
+            throw new Error("This email is already registered. Sign in or reset your password.");
+          }
+          if (!data.user) throw new Error("Could not create account. Please try again.");
+          if (!data.session) {
+            setAwaitingCode(true);
+            setChangingActivationEmail(false);
+            toast.success("Check your email for a code to activate your account.");
+            return;
+          }
+
+          toast.success("Your account is ready.");
+          if (role === "landlord") toast.info("Please add your profile photo to complete your account.");
+          navigate({ to: "/getting-started", search: { role } });
+          return;
+        }
+        if (out.confirmationRequired) {
+          setAwaitingCode(true);
+          setChangingActivationEmail(false);
+          toast.success("Check your email for a code to activate your account.");
+          return;
+        }
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
+>>>>>>> Stashed changes
         if (signInErr) throw signInErr;
         toast.success("Welcome to Kejani Homes! We've sent a welcome email.");
         if (role === "landlord") {

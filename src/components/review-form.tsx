@@ -206,6 +206,11 @@ export function ReviewForm({ propertyId, userId, onSubmitted }: Props) {
               Add
               <input type="file" accept="image/*" multiple onChange={onPick} className="hidden" />
             </label>
+<label className="flex h-20 w-20 cursor-pointer flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-xs text-muted-foreground hover:border-primary hover:text-primary">
+              <Camera className="h-5 w-5" />
+              Camera
+              <input type="file" accept="image/*" capture="environment" onChange={onPick} className="hidden" />
+            </label>
           )}
         </div>
         <p className="mt-2 text-xs text-muted-foreground">At least one photo helps other tenants trust your review.</p>

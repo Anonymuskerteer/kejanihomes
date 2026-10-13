@@ -253,14 +253,14 @@ function BrowsePage() {
   const heading = (
     <div className="flex flex-wrap items-baseline justify-between gap-4">
       <div>
-        <h1 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+        <h1 className="font-display text-[clamp(1.25rem,5vw,1.875rem)] font-bold tracking-tight">
           {county === "all"
             ? "All rentals"
             : county === "Kirinyaga"
               ? "Rentals in Mwea & Kirinyaga"
               : `Rentals in ${county}`}
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-[clamp(0.75rem,2.8vw,0.875rem)] text-muted-foreground">
           {isLoading ? "Loading…" : `${filtered.length} home${filtered.length === 1 ? "" : "s"} available`}
         </p>
       </div>
@@ -320,12 +320,12 @@ function BrowsePage() {
   const body = (
     <div className="container-page py-6">
       {isTenant && (
-        <div className="mb-6 flex min-w-0 items-center gap-2 sm:gap-3">
-          <Link to="/browse" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft">
-              <Home className="h-5 w-5" />
+        <div className="mb-6 flex min-w-0 items-center gap-1.5 sm:gap-3">
+          <Link to="/browse" className="flex min-w-0 shrink-0 items-center gap-1 sm:gap-2">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary text-primary-foreground shadow-soft sm:h-9 sm:w-9">
+              <Home className="h-4 w-4 sm:h-5 sm:w-5" />
             </span>
-            <span className="font-display text-sm font-bold tracking-tight sm:text-lg">
+            <span className="font-display text-[clamp(0.75rem,3.4vw,1.125rem)] font-bold tracking-tight">
               Kejani<span className="text-primary">Homes</span>
             </span>
           </Link>
@@ -342,7 +342,7 @@ function BrowsePage() {
               onChange={(event) => setQ(event.target.value)}
               placeholder="Search homes"
               aria-label="Search properties"
-              className="h-11 rounded-xl bg-card pl-9 text-sm"
+              className="h-10 rounded-xl bg-card pl-8 text-[clamp(0.75rem,3vw,0.875rem)] sm:h-11 sm:pl-9"
             />
           </form>
           {filterSheet}

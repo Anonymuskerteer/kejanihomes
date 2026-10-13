@@ -608,6 +608,8 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
+Create a local `.env` file with the Vite Supabase URL and publishable key for client access. Server-side account creation also requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Keep the service role key server-only: never prefix it with `VITE_`, commit it, or expose it in browser code. Configure SMTP variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`) to enable welcome emails; email delivery is optional for account creation.
+
 ```sh
 git clone <this-repository-url>
 cd <repository-name>

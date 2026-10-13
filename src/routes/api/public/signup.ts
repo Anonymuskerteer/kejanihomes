@@ -21,12 +21,31 @@ export const Route = createFileRoute("/api/public/signup")({
           if (!full_name) return fail("Full name is required.");
           if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
 
+          const missingConfig = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter(
+            (name) => !process.env[name]?.trim(),
+          );
+          if (missingConfig.length > 0) {
+            console.error(`[signup] missing server configuration: ${missingConfig.join(", ")}`);
+            return Response.json(
+              {
+                ok: false,
+                code: "SIGNUP_NOT_CONFIGURED",
+                error: "Sign-up is temporarily unavailable because server configuration is incomplete. Please contact support.",
+              },
+              { status: 503 },
+            );
+          }
+
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const normPhone = phone.replace(/^(\+?254|0)/, "");
-          const { data: bans } = await supabaseAdmin
+          const { data: bans, error: bansError } = await supabaseAdmin
             .from("user_bans")
             .select("email, phone")
             .or(`email.eq.${email},phone.ilike.%${normPhone}`);
+          if (bansError) {
+            console.error("[signup] registration eligibility check failed:", bansError);
+            return fail("Unable to validate registration right now. Please try again.", 503);
+          }
           if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
 
           const { error } = await supabaseAdmin.auth.admin.createUser({

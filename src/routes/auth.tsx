@@ -82,17 +82,22 @@ function AuthPage() {
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
         });
-        const out = (await res.json()) as {
+        let out: {
           ok: boolean;
           code?: string;
           error?: string;
           welcomeEmailSent?: boolean;
         };
-        if (!out.ok) {
+        try {
+          out = await res.json();
+        } catch {
+          throw new Error("The sign-up service returned an invalid response. Please try again later.");
+        }
+        if (!res.ok || !out.ok) {
           if (out.code === "EMAIL_ALREADY_REGISTERED") {
             throw new Error("This email is already registered. Sign in or reset your password.");
           }
-          throw new Error(out.error ?? "Could not create account");
+          throw new Error(out.error ?? "Could not create account. Please try again.");
         }
         const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
         if (signInErr) throw signInErr;

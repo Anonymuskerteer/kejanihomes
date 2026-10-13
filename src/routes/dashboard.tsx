@@ -128,7 +128,7 @@ function TenantDashboard({ userId }: { userId: string }) {
         <section className="mt-10">
           <h2 className="font-display text-xl font-bold">Your reviews</h2>
           <ul className="mt-4 space-y-3">
-            {reviews.map((r: any) => (
+            {reviews.map((r) => (
               <li key={r.id} className="rounded-2xl border border-border bg-card p-4 text-sm">
                 <div className="flex justify-between">
                   <Link to="/property/$id" params={{ id: r.property_id }} className="font-semibold hover:underline">
@@ -338,7 +338,7 @@ function PendingReviewsSection() {
         </p>
       ) : (
         <ul className="mt-4 space-y-3">
-          {pendingReviews.map((r: any) => (
+          {pendingReviews.map((r) => (
             <li key={r.id} className="rounded-2xl border border-border bg-card p-5">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>

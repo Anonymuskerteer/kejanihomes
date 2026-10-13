@@ -8,14 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/password-input";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
     meta: [
       { title: "Reset password — Kejani Homes" },
-      { name: "description", content: "Reset your Kejani Homes password with a 4-digit code sent to your email." },
+      { name: "description", content: "Reset your Kejani Homes password with a 6-digit code sent to your email." },
       { property: "og:title", content: "Reset password — Kejani Homes" },
-      { property: "og:description", content: "Reset your Kejani Homes password with a 4-digit code." },
+      { property: "og:description", content: "Reset your Kejani Homes password with a 6-digit code." },
     ],
   }),
   validateSearch: z.object({ email: z.string().optional(), code: z.string().optional() }),
@@ -34,7 +35,7 @@ function ForgotPasswordPage() {
 
   // Direct link from the email: prefill email + code and jump to the new-password step.
   useEffect(() => {
-    if (search.email && search.code && /^\d{4}$/.test(search.code)) {
+    if (search.email && search.code && /^\d{6}$/.test(search.code)) {
       setEmail(search.email);
       setCode(search.code);
       setStep("code");
@@ -45,14 +46,13 @@ function ForgotPasswordPage() {
     e?.preventDefault();
     setBusy(true);
     try {
-      const res = await fetch("/api/public/password-reset", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/forgot-password`,
       });
-      if (!res.ok) throw new Error("Could not send code");
+      if (error) throw error;
+      setCode("");
       setStep("code");
-      toast.success("If that email has an account, a 4-digit code is on its way.");
+      toast.success("If that email has an account, a 6-digit code is on its way.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send code");
     } finally {
@@ -65,15 +65,16 @@ function ForgotPasswordPage() {
     if (pw !== pw2) return toast.error("Passwords don't match");
     setBusy(true);
     try {
-      const res = await fetch("/api/public/password-reset-verify", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), code, password: pw }),
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim().toLowerCase(),
+        token: code,
+        type: "recovery",
       });
-      const data = (await res.json()) as { ok: boolean; error?: string };
-      if (!data.ok) throw new Error(data.error ?? "Could not reset password");
-      toast.success("Password updated. Please sign in.");
-      navigate({ to: "/auth" });
+      if (verifyError) throw verifyError;
+      const { error: updateError } = await supabase.auth.updateUser({ password: pw });
+      if (updateError) throw updateError;
+      toast.success("Password updated.");
+      navigate({ to: "/dashboard" });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not reset password");
     } finally {
@@ -105,20 +106,20 @@ function ForgotPasswordPage() {
           ) : (
             <>
               <p className="mt-2 text-sm text-muted-foreground">
-                Enter the code sent to <strong>{email}</strong> (valid for 10 minutes) and choose a new password.
+                Enter the 6-digit code sent to <strong>{email}</strong> and choose a new password.
               </p>
               <form onSubmit={verify} className="mt-6 space-y-4">
                 <div className="space-y-1.5">
-                  <Label>4-digit code</Label>
+                  <Label>6-digit code</Label>
                   <Input
                     required
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    maxLength={4}
-                    pattern="\d{4}"
+                    maxLength={6}
+                    pattern="\d{6}"
                     value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                    placeholder="••••"
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    placeholder="••••••"
                     className="h-14 text-center text-2xl font-bold tracking-[0.6em]"
                   />
                 </div>
@@ -130,7 +131,7 @@ function ForgotPasswordPage() {
                   <Label>Confirm new password</Label>
                   <PasswordInput required minLength={6} value={pw2} onChange={(e) => setPw2(e.target.value)} />
                 </div>
-                <Button type="submit" size="lg" className="w-full" disabled={busy || code.length !== 4}>
+                <Button type="submit" size="lg" className="w-full" disabled={busy || code.length !== 6}>
                   {busy ? "Updating…" : "Reset password"}
                 </Button>
                 <div className="flex justify-between text-xs">

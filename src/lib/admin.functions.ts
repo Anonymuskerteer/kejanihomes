@@ -5,7 +5,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Ctx = { supabase: { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" }) => PromiseLike<{ data: boolean | null }> }; userId: string };
 
 async function assertAdmin(context: Ctx) {
-  const { data } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  const { data, error } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
+  if (error) throw new Error(`Unable to verify admin access: ${error.message}`);
   if (!data) throw new Error("Forbidden");
 }
 
@@ -17,7 +18,7 @@ export interface AdminUser {
   avatar_url: string | null;
   role: string | null;
   account_status: string;
-  email_confirmed: boolean;
+  email_confirmed: boolean | null;
   banned: boolean;
   last_sign_in_at: string | null;
   created_at: string;
@@ -27,15 +28,50 @@ export const listAdminUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context as unknown as Ctx);
+    const hasAdminKey = !!(process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY);
+    if (!hasAdminKey) {
+      const [profilesRes, rolesRes] = await Promise.all([
+        context.supabase.from("profiles").select("*"),
+        context.supabase.from("user_roles").select("user_id, role"),
+      ]);
+      if (profilesRes.error) throw new Error(`Unable to load user profiles: ${profilesRes.error.message}`);
+      if (rolesRes.error) throw new Error(`Unable to load user roles: ${rolesRes.error.message}`);
+
+      const roleMap = new Map(rolesRes.data.map((r) => [r.user_id, r.role]));
+      return {
+        users: profilesRes.data.map((p) => ({
+          id: p.id,
+          email: p.email,
+          full_name: p.full_name,
+          phone: p.phone,
+          avatar_url: p.avatar_url,
+          role: roleMap.get(p.id) ?? null,
+          account_status: p.account_status,
+          email_confirmed: null,
+          banned: false,
+          last_sign_in_at: null,
+          created_at: p.created_at,
+        })),
+        bans: [],
+        elevatedAccessAvailable: false,
+      };
+    }
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const [{ data: profiles }, { data: roles }, authRes, { data: bans }] = await Promise.all([
+    const [profilesRes, rolesRes, authRes, bansRes] = await Promise.all([
       supabaseAdmin.from("profiles").select("*"),
       supabaseAdmin.from("user_roles").select("user_id, role"),
       supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
       supabaseAdmin.from("user_bans").select("*").order("created_at", { ascending: false }),
     ]);
-    const authMap = new Map((authRes.data?.users ?? []).map((u) => [u.id, u]));
-    const users: AdminUser[] = (profiles ?? []).map((p) => {
+    if (profilesRes.error) throw new Error(`Unable to load user profiles: ${profilesRes.error.message}`);
+    if (rolesRes.error) throw new Error(`Unable to load user roles: ${rolesRes.error.message}`);
+    if (authRes.error) throw new Error(`Unable to load authentication users: ${authRes.error.message}`);
+    if (bansRes.error) throw new Error(`Unable to load user bans: ${bansRes.error.message}`);
+
+    const authMap = new Map(authRes.data.users.map((u) => [u.id, u]));
+    const roleMap = new Map(rolesRes.data.map((r) => [r.user_id, r.role]));
+    const users: AdminUser[] = profilesRes.data.map((p) => {
       const a = authMap.get(p.id);
       const bannedUntil = (a as { banned_until?: string } | undefined)?.banned_until;
       return {
@@ -44,7 +80,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
         full_name: p.full_name,
         phone: p.phone,
         avatar_url: p.avatar_url,
-        role: roles?.find((r) => r.user_id === p.id)?.role ?? null,
+        role: roleMap.get(p.id) ?? null,
         account_status: p.account_status,
         email_confirmed: !!a?.email_confirmed_at,
         banned: !!bannedUntil && new Date(bannedUntil).getTime() > Date.now(),
@@ -52,7 +88,7 @@ export const listAdminUsers = createServerFn({ method: "GET" })
         created_at: p.created_at,
       };
     });
-    return { users, bans: bans ?? [] };
+    return { users, bans: bansRes.data, elevatedAccessAvailable: true };
   });
 
 const actionSchema = z.object({

@@ -1,1 +1,12 @@
 project_id = "lqpitcltfotbekygpxld"
+
+[auth.email]
+otp_length = 6
+
+[auth.email.template.confirmation]
+subject = "Your Kejani Homes account activation code"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Your Kejani Homes password reset code"
+content_path = "./supabase/templates/recovery.html"

@@ -49,14 +49,24 @@ function LogsPage() {
   const [q, setQ] = useState("");
 
   const { data } = useQuery({
-    queryKey: ["admin-logs"],
+    queryKey: ["admin-logs", tab],
     enabled: !!user && role === "admin",
-    refetchInterval: 30_000,
+    refetchInterval: 60_000,
     queryFn: async () => {
-      const [{ data: logs }, { data: profiles }] = await Promise.all([
-        supabase.from("activity_logs").select("*").order("created_at", { ascending: false }).limit(500),
-        supabase.from("profiles").select("id, full_name, email"),
-      ]);
+      const { data: logs, error: logsError } = await supabase
+        .from("activity_logs")
+        .select("*")
+        .eq("category", tab)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (logsError) throw logsError;
+
+      const actorIds = [...new Set((logs ?? []).flatMap((log) => (log.actor_id ? [log.actor_id] : [])))];
+      const { data: profiles, error: profilesError } = actorIds.length
+        ? await supabase.from("profiles").select("id, full_name, email").in("id", actorIds)
+        : { data: [], error: null };
+      if (profilesError) throw profilesError;
+
       return { logs: logs ?? [], people: new Map((profiles ?? []).map((p) => [p.id, p])) };
     },
   });
@@ -64,13 +74,12 @@ function LogsPage() {
   const rows = useMemo(() => {
     const term = q.trim().toLowerCase();
     return (data?.logs ?? []).filter((l) => {
-      if (l.category !== tab) return false;
       if (!term) return true;
       const who = l.actor_id ? data?.people.get(l.actor_id) : undefined;
       return [LABELS[l.action] ?? l.action, who?.full_name, who?.email, JSON.stringify(l.details)]
         .some((v) => (v ?? "").toLowerCase().includes(term));
     });
-  }, [data, tab, q]);
+  }, [data, q]);
 
   return (
     <AdminShell title="Logs" subtitle="Who did what, and when.">
@@ -93,6 +102,7 @@ function LogsPage() {
           ? "Sign-ins, sign-outs, expired sessions, password resets and account changes."
           : "New listings, ratings, saves and other activity on the website."}
       </p>
+      <p className="mt-1 text-xs text-muted-foreground">Showing the latest 5 entries.</p>
 
       <div className="mt-4 divide-y divide-border rounded-2xl border border-border bg-card">
         {rows.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">No log entries yet.</p>}

@@ -33,24 +33,37 @@ function AuthPage() {
   const [busy, setBusy] = useState(false);
   const [awaitingCode, setAwaitingCode] = useState(false);
   const [code, setCode] = useState("");
+  const [changingActivationEmail, setChangingActivationEmail] = useState(false);
+
+  const changeActivationEmail = () => {
+    setAwaitingCode(false);
+    setCode("");
+    setMode("signup");
+    setChangingActivationEmail(true);
+  };
 
   const resend = async () => {
-    await fetch("/api/public/resend-activation", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ email: email.trim().toLowerCase() }),
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim().toLowerCase(),
+      options: { emailRedirectTo: `${window.location.origin}/activate` },
     });
+    if (error) {
+      toast.error(error.message);
+      return false;
+    }
     toast.success("A new activation code has been sent to your email.");
+    return true;
   };
 
   const verifyCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
-      const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code, type: "email" });
+      const { error } = await supabase.auth.verifyOtp({ email: email.trim().toLowerCase(), token: code, type: "signup" });
       if (error) throw error;
       toast.success("Account activated — welcome!");
-      navigate({ to: role === "landlord" ? "/dashboard" : "/browse" });
+      navigate({ to: "/getting-started", search: { role } });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Invalid or expired code");
     } finally {
@@ -65,8 +78,7 @@ function AuthPage() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error && /not confirmed/i.test(error.message)) {
-          await resend();
-          setAwaitingCode(true);
+          if (await resend()) setAwaitingCode(true);
           return;
         }
         if (error && /banned/i.test(error.message)) throw new Error("This account has been deactivated. Contact support.");
@@ -77,16 +89,18 @@ function AuthPage() {
         if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/i.test(email.trim()))
           throw new Error("Please use a valid Gmail or Yahoo email address.");
         if (!/^(\+?254|0)[17]\d{8}$/.test(phone.replace(/\s/g, ""))) throw new Error("A valid phone number is required");
+        const normalizedEmail = email.trim().toLowerCase();
         const res = await fetch("/api/public/signup", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, password, full_name: fullName, phone, role }),
+          body: JSON.stringify({ email: normalizedEmail, password, full_name: fullName, phone, role }),
         });
         let out: {
           ok: boolean;
           code?: string;
           error?: string;
           welcomeEmailSent?: boolean;
+          confirmationRequired?: boolean;
         };
         try {
           out = await res.json();
@@ -97,9 +111,54 @@ function AuthPage() {
           if (out.code === "EMAIL_ALREADY_REGISTERED") {
             throw new Error("This email is already registered. Sign in or reset your password.");
           }
-          throw new Error(out.error ?? "Could not create account. Please try again.");
+          if (out.code !== "SIGNUP_NOT_CONFIGURED") {
+            throw new Error(out.error ?? "Could not create account. Please try again.");
+          }
+
+          const { data, error } = await supabase.auth.signUp({
+            email: normalizedEmail,
+            password,
+            options: {
+              data: {
+                full_name: fullName.trim(),
+                phone: phone.replace(/\s/g, ""),
+                role,
+              },
+              emailRedirectTo: `${window.location.origin}/activate`,
+            },
+          });
+          if (error) {
+            if (
+              error.code === "user_already_exists" ||
+              /already registered|already exists/i.test(error.message)
+            ) {
+              throw new Error("This email is already registered. Sign in or reset your password.");
+            }
+            throw error;
+          }
+          if (data.user?.identities?.length === 0) {
+            throw new Error("This email is already registered. Sign in or reset your password.");
+          }
+          if (!data.user) throw new Error("Could not create account. Please try again.");
+          if (!data.session) {
+            setAwaitingCode(true);
+            setChangingActivationEmail(false);
+            toast.success("Check your email for a code to activate your account.");
+            return;
+          }
+
+          toast.success("Your account is ready.");
+          if (role === "landlord") toast.info("Please add your profile photo to complete your account.");
+          navigate({ to: "/getting-started", search: { role } });
+          return;
         }
-        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+        if (out.confirmationRequired) {
+          setAwaitingCode(true);
+          setChangingActivationEmail(false);
+          toast.success("Check your email for a code to activate your account.");
+          return;
+        }
+        const { error: signInErr } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (signInErr) throw signInErr;
         if (out.welcomeEmailSent) {
           toast.success("Welcome to Kejani Homes! We've sent a welcome email.");
@@ -171,7 +230,7 @@ function AuthPage() {
             {awaitingCode ? (
               <form className="mt-6 space-y-4" onSubmit={verifyCode}>
                 <p className="text-sm text-muted-foreground">
-                  We emailed an activation code to <strong>{email}</strong>. Enter it below, or tap the link in the email.
+                  Enter the activation code sent to <strong>{email}</strong>, or use the link in the email. If it does not arrive, check your spam folder or resend it.
                 </p>
                 <Input
                   required
@@ -187,8 +246,8 @@ function AuthPage() {
                   {busy ? "Verifying…" : "Activate account"}
                 </Button>
                 <div className="flex justify-between text-xs">
-                  <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setAwaitingCode(false)}>
-                    Back
+                  <button type="button" className="text-muted-foreground hover:text-foreground" onClick={changeActivationEmail}>
+                    Change email
                   </button>
                   <button type="button" className="text-primary hover:underline" disabled={busy} onClick={resend}>
                     Resend code
@@ -197,6 +256,11 @@ function AuthPage() {
               </form>
             ) : (
             <form className="mt-6 space-y-4" onSubmit={submit}>
+              {changingActivationEmail && (
+                <p className="rounded-xl border border-border bg-secondary/50 p-3 text-sm text-muted-foreground">
+                  Correct the email below and create a new activation request. The earlier unverified request will remain inactive.
+                </p>
+              )}
               {mode === "signup" && (
                 <>
                   <div className="space-y-1.5">
@@ -275,11 +339,11 @@ function AuthPage() {
                     ? "Sign in"
                     : "Create account"}
               </Button>
-              {mode === "signin" && (
-                <div className="flex items-center justify-between text-xs">
-                  <Link to="/forgot-password" className="text-primary hover:underline">
-                    Forgot password?
-                  </Link>
+              <div className="flex items-center justify-between text-xs">
+                <Link to="/forgot-password" className="text-primary hover:underline">
+                  Forgot password?
+                </Link>
+                {mode === "signin" && (
                   <button
                     type="button"
                     onClick={() => setMode("signup")}
@@ -287,8 +351,8 @@ function AuthPage() {
                   >
                     Need an account?
                   </button>
-                </div>
-              )}
+                )}
+              </div>
             </form>
             )}
           </div>

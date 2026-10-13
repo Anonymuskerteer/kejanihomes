@@ -1,7 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/integrations/supabase/types";
 
 // POST /api/public/signup { email, password, full_name, phone, role, origin }
-// Creates an active account (Gmail/Yahoo only), sends a welcome email via Gmail SMTP; the client then signs in.
+// Creates an account through public Supabase Auth; the database trigger creates its profile and role.
 export const Route = createFileRoute("/api/public/signup")({
   server: {
     handlers: {
@@ -21,9 +23,15 @@ export const Route = createFileRoute("/api/public/signup")({
           if (!full_name) return fail("Full name is required.");
           if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
 
-          const missingConfig = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter(
-            (name) => !process.env[name]?.trim(),
-          );
+          const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
+          const publishableKey =
+            process.env.SUPABASE_PUBLISHABLE_KEY ||
+            process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+            import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+          const missingConfig = [
+            ...(!supabaseUrl ? ["SUPABASE_URL"] : []),
+            ...(!publishableKey ? ["SUPABASE_PUBLISHABLE_KEY"] : []),
+          ];
           if (missingConfig.length > 0) {
             console.error(`[signup] missing server configuration: ${missingConfig.join(", ")}`);
             return Response.json(
@@ -36,28 +44,36 @@ export const Route = createFileRoute("/api/public/signup")({
             );
           }
 
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const normPhone = phone.replace(/^(\+?254|0)/, "");
-          const { data: bans, error: bansError } = await supabaseAdmin
-            .from("user_bans")
-            .select("email, phone")
-            .or(`email.eq.${email},phone.ilike.%${normPhone}`);
-          if (bansError) {
-            console.error("[signup] registration eligibility check failed:", bansError);
-            return fail("Unable to validate registration right now. Please try again.", 503);
+          if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const normPhone = phone.replace(/^(\+?254|0)/, "");
+            const { data: bans, error: bansError } = await supabaseAdmin
+              .from("user_bans")
+              .select("email, phone")
+              .or(`email.eq.${email},phone.ilike.%${normPhone}`);
+            if (bansError) {
+              console.error("[signup] registration eligibility check failed:", bansError);
+              return fail("Unable to validate registration right now. Please try again.", 503);
+            }
+            if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
           }
-          if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
 
-          const { error } = await supabaseAdmin.auth.admin.createUser({
+          const supabasePublic = createClient<Database>(supabaseUrl!, publishableKey!, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          });
+          const { data: signup, error } = await supabasePublic.auth.signUp({
             email,
             password,
-            email_confirm: true,
-            user_metadata: { full_name, phone, role },
+            options: {
+              data: { full_name, phone, role },
+              emailRedirectTo: `${origin}/activate`,
+            },
           });
           if (error) {
             if (
               error.code === "email_exists" ||
-              /already|exists|duplicate/i.test(error.message)
+              error.code === "user_already_exists" ||
+              /already registered|already exists/i.test(error.message)
             ) {
               return Response.json(
                 {
@@ -68,16 +84,21 @@ export const Route = createFileRoute("/api/public/signup")({
                 { status: 409 },
               );
             }
+            console.error("[signup] Supabase Auth rejected registration:", error);
             return fail(error.message);
           }
+          if (signup.user?.identities?.length === 0) {
+            return Response.json(
+              {
+                ok: false,
+                code: "EMAIL_ALREADY_REGISTERED",
+                error: "This email is already registered. Sign in or reset your password.",
+              },
+              { status: 409 },
+            );
+          }
+          if (!signup.user) return fail("Could not create account. Please try again.", 502);
 
-          const nodemailer = (await import("nodemailer")).default;
-          const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST!,
-            port: Number(process.env.SMTP_PORT ?? 587),
-            secure: false,
-            auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
-          });
           const safeName = full_name.replace(/[<>&"]/g, "");
           const html = `
             <div style="font-family:Arial,sans-serif;background:#fff;padding:32px;max-width:560px;margin:0 auto">
@@ -94,19 +115,36 @@ export const Route = createFileRoute("/api/public/signup")({
               <p style="color:#999;font-size:12px;margin-top:32px">— The Kejani Homes team</p>
             </div>`;
           let welcomeEmailSent = false;
-          try {
-            await transporter.sendMail({
-              from: process.env.SMTP_FROM!,
-              to: email,
-              subject: "Welcome to Kejani Homes 🏡",
-              html,
-              text: `Karibu Kejani Homes, ${safeName}! Your account is ready: ${origin}/auth`,
-            });
-            welcomeEmailSent = true;
-          } catch (e) {
-            console.error("[signup] welcome email failed:", e);
+          const smtpConfigured = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS", "SMTP_FROM"].every(
+            (name) => !!process.env[name]?.trim(),
+          );
+          if (smtpConfigured) {
+            try {
+              const nodemailer = (await import("nodemailer")).default;
+              const smtpPort = Number(process.env.SMTP_PORT ?? 587);
+              const transporter = nodemailer.createTransport({
+                host: process.env.SMTP_HOST!,
+                port: smtpPort,
+                secure: smtpPort === 465,
+                auth: { user: process.env.SMTP_USER!, pass: process.env.SMTP_PASS! },
+              });
+              await transporter.sendMail({
+                from: process.env.SMTP_FROM!,
+                to: email,
+                subject: "Welcome to Kejani Homes 🏡",
+                html,
+                text: `Karibu Kejani Homes, ${safeName}! Your account is ready: ${origin}/auth`,
+              });
+              welcomeEmailSent = true;
+            } catch (e) {
+              console.error("[signup] welcome email failed:", e);
+            }
           }
-          return Response.json({ ok: true, welcomeEmailSent });
+          return Response.json({
+            ok: true,
+            welcomeEmailSent,
+            confirmationRequired: !signup.session,
+          });
         } catch (err) {
           console.error("[signup] failed:", err);
           return fail("Could not create account. Try again.", 500);

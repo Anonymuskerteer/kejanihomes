@@ -608,7 +608,13 @@ Continue developing this project in the [Lovable editor](https://lovable.dev/pro
 
 Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-Create a local `.env` file with the Vite Supabase URL and publishable key for client access. Server-side account creation also requires `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. Keep the service role key server-only: never prefix it with `VITE_`, commit it, or expose it in browser code. Configure SMTP variables (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`) to enable welcome emails; email delivery is optional for account creation.
+Create a local `.env` file with `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` for client access. Server-side admin pages and account-management actions also require `SUPABASE_URL` and a server-only `SUPABASE_SERVICE_ROLE_KEY` (or Supabase `SUPABASE_SECRET_KEY`). Keep these elevated keys server-only: never prefix them with `VITE_`, commit them, or expose them in browser code.
+
+Configure the Supabase project's **Authentication → SMTP settings** with a verified mail provider to deliver signup confirmation, activation, and password recovery emails. Add `${APP_ORIGIN}/activate` and `${APP_ORIGIN}/forgot-password` to the Supabase Auth redirect URL allow list. The app's own SMTP settings (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM`) are separately used for welcome emails; set these in the server environment to enable those messages. Use port `587` for STARTTLS or `465` for implicit TLS. Without a configured provider, Supabase Auth cannot deliver confirmation or recovery email.
+
+The signup activation and password recovery emails must include the Supabase `{{ .Token }}` template variable because the app accepts six-digit codes. The templates are in `supabase/templates/confirmation.html` and `supabase/templates/recovery.html`; local Supabase configuration sets the OTP length to six in `supabase/config.toml`. Apply their subjects and HTML under **Authentication → Email Templates → Confirm signup** and **Reset password** in the hosted Supabase project (or deploy the Supabase Auth configuration using your normal Supabase CLI workflow). Check both templates after deployment: each email body must visibly contain the rendered six-digit `{{ .Token }}`. A template that only renders `{{ .ConfirmationURL }}` sends a link but no code. Activation resend uses the same signup confirmation template, and password-reset resend uses the same recovery template.
+
+The admin users page can display profiles and roles through the authenticated admin's database permissions without an elevated key. It is read-only without `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`; account-management actions and ban records require that server-only key.
 
 ```sh
 git clone <this-repository-url>

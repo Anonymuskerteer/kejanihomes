@@ -33,7 +33,7 @@ export const Route = createFileRoute("/admin/users")({
 type Action = "activate" | "deactivate" | "delete" | "ban" | "confirm" | "force_reset";
 
 function UsersPage() {
-  const { user, role: myRole } = useAuth();
+  const { user, role: myRole, loading: authLoading } = useAuth();
   const qc = useQueryClient();
   const fetchUsers = useServerFn(listAdminUsers);
   const act = useServerFn(adminUserAction);
@@ -43,7 +43,7 @@ function UsersPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [sort, setSort] = useState("newest");
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["admin-users"],
     queryFn: () => fetchUsers(),
     enabled: !!user && myRole === "admin",
@@ -53,7 +53,7 @@ function UsersPage() {
     const term = q.trim().toLowerCase().replace(/\s/g, "");
     let list = (data?.users ?? []).filter((u) => {
       if (roleFilter !== "all" && u.role !== roleFilter) return false;
-      if (statusFilter === "unverified" ? u.email_confirmed : statusFilter !== "all" && statusOf(u) !== statusFilter) return false;
+      if (statusFilter === "unverified" ? u.email_confirmed !== false : statusFilter !== "all" && statusOf(u) !== statusFilter) return false;
       if (!term) return true;
       return [u.full_name, u.email, u.phone].some((v) => (v ?? "").toLowerCase().replace(/\s/g, "").includes(term));
     });
@@ -89,10 +89,10 @@ function UsersPage() {
   };
 
   const counts = {
-    all: data?.users.length ?? 0,
-    tenant: data?.users.filter((u) => u.role === "tenant").length ?? 0,
-    landlord: data?.users.filter((u) => u.role === "landlord").length ?? 0,
-    admin: data?.users.filter((u) => u.role === "admin").length ?? 0,
+    all: data?.users.length,
+    tenant: data?.users.filter((u) => u.role === "tenant").length,
+    landlord: data?.users.filter((u) => u.role === "landlord").length,
+    admin: data?.users.filter((u) => u.role === "admin").length,
   };
 
   return (
@@ -105,10 +105,23 @@ function UsersPage() {
             className={`rounded-2xl border p-4 text-left transition ${roleFilter === r ? "border-primary bg-primary-soft" : "border-border bg-card hover:border-primary/50"}`}
           >
             <div className="text-xs capitalize text-muted-foreground">{r === "all" ? "All users" : r === "landlord" ? "Landlords / Agents" : `${r}s`}</div>
-            <div className="mt-1 font-display text-2xl font-bold">{counts[r]}</div>
+            <div className="mt-1 font-display text-2xl font-bold">{counts[r] ?? "—"}</div>
           </button>
         ))}
       </div>
+
+      {isError && (
+        <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <span>Could not load users: {error instanceof Error ? error.message : "An unexpected error occurred."}</span>
+          <Button size="sm" variant="outline" onClick={() => void refetch()}>Try again</Button>
+        </div>
+      )}
+
+      {data && !data.elevatedAccessAvailable && (
+        <div className="mt-4 rounded-xl border border-accent/40 bg-accent/10 p-4 text-sm">
+          Users are shown in read-only mode. Configure the server-only <code>SUPABASE_SERVICE_ROLE_KEY</code> or <code>SUPABASE_SECRET_KEY</code> to enable account actions and ban management.
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col gap-3 md:flex-row">
         <div className="relative flex-1">
@@ -153,7 +166,19 @@ function UsersPage() {
             {isLoading && (
               <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">Loading users…</td></tr>
             )}
-            {!isLoading && rows.length === 0 && (
+            {!isLoading && !isError && authLoading && (
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">Checking your account…</td></tr>
+            )}
+            {!isLoading && !isError && !authLoading && !user && (
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">Sign in with an admin account to view users.</td></tr>
+            )}
+            {!isLoading && !isError && !authLoading && user && !myRole && (
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No account role was found. Refresh the page or contact an administrator.</td></tr>
+            )}
+            {!isLoading && !isError && !authLoading && user && myRole && myRole !== "admin" && (
+              <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">Admin access is required to view users.</td></tr>
+            )}
+            {!isLoading && !isError && !authLoading && myRole === "admin" && rows.length === 0 && (
               <tr><td colSpan={7} className="px-4 py-10 text-center text-muted-foreground">No users match.</td></tr>
             )}
             {rows.map((u) => (
@@ -175,13 +200,13 @@ function UsersPage() {
                 <td className="px-4 py-3 text-muted-foreground">{timeAgo(u.created_at)}</td>
                 <td className="px-4 py-3 text-muted-foreground">{timeAgo(u.last_sign_in_at)}</td>
                 <td className="px-4 py-3 text-right">
-                  {u.id !== user?.id && (
+                  {data?.elevatedAccessAvailable && u.id !== user?.id && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button size="icon" variant="ghost" aria-label="Actions"><MoreHorizontal className="h-4 w-4" /></Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-48">
-                        {!u.email_confirmed && (
+                        {u.email_confirmed === false && (
                           <DropdownMenuItem onClick={() => run(u, "confirm")}><MailCheck className="mr-2 h-4 w-4" />Approve sign-up</DropdownMenuItem>
                         )}
                         {statusOf(u) !== "active" ? (
@@ -205,7 +230,7 @@ function UsersPage() {
         </table>
       </div>
 
-      <section className="mt-10">
+      {data?.elevatedAccessAvailable && <section className="mt-10">
         <h2 className="font-display text-xl font-bold">Banned emails & numbers</h2>
         <p className="text-sm text-muted-foreground">These can't register again until you lift the ban.</p>
         <div className="mt-3 divide-y divide-border rounded-2xl border border-border bg-card">
@@ -230,7 +255,7 @@ function UsersPage() {
             </div>
           ))}
         </div>
-      </section>
+      </section>}
     </AdminShell>
   );
 }
@@ -243,8 +268,8 @@ function statusOf(u: AdminUser) {
 
 function StatusBadge({ u }: { u: AdminUser }) {
   const s = statusOf(u);
-  if (s === "active" && !u.email_confirmed)
+  if (s === "active" && u.email_confirmed === false)
     return <span className="rounded-full bg-accent/25 px-2.5 py-1 text-xs font-semibold">Not activated</span>;
   const cls = s === "active" ? "bg-success/15 text-success" : s === "banned" ? "bg-destructive/15 text-destructive" : "bg-muted text-muted-foreground";
-  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${cls}`}>{s}</span>;
+  return <span className={`rounded-full px-2.5 py-1 text-xs font-semibold capitalize ${cls}`}>{u.email_confirmed === null ? `${s} · email status unavailable` : s}</span>;
 }

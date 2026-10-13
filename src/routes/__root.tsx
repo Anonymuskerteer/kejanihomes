@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "sonner";
 import { SessionGuard } from "@/components/session-guard";
 import { AppBottomNav } from "@/components/app-bottom-nav";
+import { SupportChatButton } from "@/components/support-chat-button";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -143,6 +144,7 @@ function RootComponent() {
       <SessionGuard />
       <Outlet />
       <AppBottomNav />
+      <SupportChatButton />
       <Toaster position="top-right" richColors closeButton />
     </QueryClientProvider>
   );

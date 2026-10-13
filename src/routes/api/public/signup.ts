@@ -56,6 +56,18 @@ export const Route = createFileRoute("/api/public/signup")({
               return fail("Unable to validate registration right now. Please try again.", 503);
             }
             if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
+            const { data: phoneOwners, error: phoneError } = await supabaseAdmin
+              .from("profiles")
+              .select("id, phone")
+              .ilike("phone", `%${normPhone}`);
+            if (phoneError) {
+              console.error("[signup] phone uniqueness check failed:", phoneError);
+              return fail("Unable to validate registration right now. Please try again.", 503);
+            }
+            const taken = (phoneOwners ?? []).some(
+              (p) => (p.phone ?? "").replace(/\s/g, "").replace(/^(\+?254|0)/, "") === normPhone,
+            );
+            if (taken) return fail("This phone number is already registered to another account.", 409);
           }
 
           const supabasePublic = createClient<Database>(supabaseUrl!, publishableKey!, {

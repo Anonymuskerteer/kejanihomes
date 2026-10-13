@@ -29,6 +29,20 @@
       "when": 1791828319910,
       "tag": "0003_chat_saves_reset",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791903613558,
+      "tag": "0004_tighten_profiles_storage",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791903693266,
+      "tag": "0005_add_property_deposit_kes",
+      "breakpoints": true
     }
   ]
 }

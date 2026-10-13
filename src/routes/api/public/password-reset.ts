@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 // POST /api/public/password-reset  { email }
-// Generates a 4-digit OTP, stores its hash, and emails it via SMTP.
+// Emails a one-time recovery link that opens /reset-password.
 // Unknown emails receive the same success response to avoid account enumeration.
 export const Route = createFileRoute("/api/public/password-reset")({
   server: {
@@ -47,29 +47,13 @@ export const Route = createFileRoute("/api/public/password-reset")({
           }
           if (!prof) return Response.json({ ok: true });
 
-          const code = String(crypto.getRandomValues(new Uint32Array(1))[0] % 10000).padStart(4, "0");
-          const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`${email}:${code}`));
-          const code_hash = Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
-          const { error: invalidateError } = await supabaseAdmin
-            .from("password_reset_codes")
-            .update({ used: true })
-            .eq("email", email)
-            .eq("used", false);
-          if (invalidateError) {
-            console.error("[password-reset] could not invalidate previous codes:", invalidateError);
-            return fail("Password reset email is temporarily unavailable. Please try again later.", 503);
-          }
-          const { data: resetCode, error: insertError } = await supabaseAdmin
-            .from("password_reset_codes")
-            .insert({
-              email,
-              code_hash,
-              expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
-            })
-            .select("id")
-            .single();
-          if (insertError || !resetCode) {
-            console.error("[password-reset] could not store reset code:", insertError);
+          const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+            type: "recovery",
+            email,
+          });
+          const tokenHash = linkData?.properties?.hashed_token;
+          if (linkError || !tokenHash) {
+            console.error("[password-reset] could not create reset link:", linkError);
             return fail("Password reset email is temporarily unavailable. Please try again later.", 503);
           }
 
@@ -86,12 +70,11 @@ export const Route = createFileRoute("/api/public/password-reset")({
               },
             });
 
-            const resetLink = `${new URL(request.url).origin}/forgot-password?email=${encodeURIComponent(email)}&code=${code}`;
+            const resetLink = `${new URL(request.url).origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}`;
             const html = `
               <div style="font-family:Arial,sans-serif;background:#fff;padding:32px;max-width:560px;margin:0 auto">
-                <h1 style="color:#317E3D;font-size:22px;margin:0 0 12px">Your password reset code</h1>
-                <p style="color:#333;font-size:15px;line-height:1.5">Use this code to reset your Kejani Homes password. It expires in 10 minutes.</p>
-                <p style="text-align:center;margin:28px 0;font-size:36px;letter-spacing:12px;font-weight:700;color:#317E3D">${code}</p>
+                <h1 style="color:#317E3D;font-size:22px;margin:0 0 12px">Reset your password</h1>
+                <p style="color:#333;font-size:15px;line-height:1.5">Click the button below to choose a new Kejani Homes password. The link expires in 1 hour.</p>
                 <p style="text-align:center;margin:24px 0">
                   <a href="${resetLink}" style="background:#317E3D;color:#fff;text-decoration:none;padding:12px 24px;border-radius:10px;font-weight:600;display:inline-block">Change my password</a>
                 </p>
@@ -104,12 +87,11 @@ export const Route = createFileRoute("/api/public/password-reset")({
               from: process.env.SMTP_FROM!,
               // The admin login inbox is not a real mailbox; deliver its codes to the team Gmail.
               to: email === "admin@kejanihomes.ke" ? "kejanihomeskenya@gmail.com" : email,
-              subject: `${code} is your Kejani Homes reset code`,
+              subject: "Reset your Kejani Homes password",
               html,
-              text: `Your Kejani Homes password reset code is ${code}. It expires in 10 minutes. Change your password here: ${resetLink}`,
+              text: `Reset your Kejani Homes password here (expires in 1 hour): ${resetLink}`,
             });
           } catch (err) {
-            await supabaseAdmin.from("password_reset_codes").update({ used: true }).eq("id", resetCode.id);
             console.error("[password-reset] email delivery failed:", err);
             return fail("We could not send the reset email. Please try again later.", 502);
           }

@@ -12,7 +12,14 @@ import { completeForcedReset } from "@/lib/account.functions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Set a new password — Kejani Homes" }] }),
+  head: () => ({
+    meta: [
+      { title: "Set a new password — Kejani Homes" },
+      { name: "description", content: "Choose a new password for your Kejani Homes account." },
+      { property: "og:title", content: "Set a new password — Kejani Homes" },
+      { property: "og:description", content: "Choose a new password for your Kejani Homes account." },
+    ],
+  }),
   component: ResetPasswordPage,
 });
 
@@ -30,9 +37,20 @@ function ResetPasswordPage() {
       if (event === "PASSWORD_RECOVERY") setRecoveryReady(true);
     });
     // Also accept if a session is already present (link just clicked)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setRecoveryReady(true);
-    });
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    if (tokenHash) {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" }).then(({ error }) => {
+        if (error) toast.error("This reset link is invalid or has expired. Request a new one.");
+        else {
+          setRecoveryReady(true);
+          window.history.replaceState(null, "", "/reset-password");
+        }
+      });
+    } else {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session) setRecoveryReady(true);
+      });
+    }
     return () => data.subscription.unsubscribe();
   }, []);
 

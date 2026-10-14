@@ -28,8 +28,6 @@ import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin.analytics'
 import { Route as ApiPublicSignupRouteImport } from './routes/api/public/signup'
-import { Route as ApiPublicSeedTenantRouteImport } from './routes/api/public/seed-tenant'
-import { Route as ApiPublicSeedAdminRouteImport } from './routes/api/public/seed-admin'
 import { Route as ApiPublicResendActivationRouteImport } from './routes/api/public/resend-activation'
 import { Route as ApiPublicPasswordResetRouteImport } from './routes/api/public/password-reset'
 
@@ -128,16 +126,6 @@ const ApiPublicSignupRoute = ApiPublicSignupRouteImport.update({
   path: '/api/public/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicSeedTenantRoute = ApiPublicSeedTenantRouteImport.update({
-  id: '/api/public/seed-tenant',
-  path: '/api/public/seed-tenant',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicSeedAdminRoute = ApiPublicSeedAdminRouteImport.update({
-  id: '/api/public/seed-admin',
-  path: '/api/public/seed-admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicResendActivationRoute =
   ApiPublicResendActivationRouteImport.update({
     id: '/api/public/resend-activation',
@@ -171,8 +159,6 @@ export interface FileRoutesByFullPath {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
-  '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
-  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRoutesByTo {
@@ -196,8 +182,6 @@ export interface FileRoutesByTo {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
-  '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
-  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRoutesById {
@@ -222,8 +206,6 @@ export interface FileRoutesById {
   '/property/$id': typeof PropertyIdRoute
   '/api/public/password-reset': typeof ApiPublicPasswordResetRoute
   '/api/public/resend-activation': typeof ApiPublicResendActivationRoute
-  '/api/public/seed-admin': typeof ApiPublicSeedAdminRoute
-  '/api/public/seed-tenant': typeof ApiPublicSeedTenantRoute
   '/api/public/signup': typeof ApiPublicSignupRoute
 }
 export interface FileRouteTypes {
@@ -249,8 +231,6 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/resend-activation'
-    | '/api/public/seed-admin'
-    | '/api/public/seed-tenant'
     | '/api/public/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -274,8 +254,6 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/resend-activation'
-    | '/api/public/seed-admin'
-    | '/api/public/seed-tenant'
     | '/api/public/signup'
   id:
     | '__root__'
@@ -299,8 +277,6 @@ export interface FileRouteTypes {
     | '/property/$id'
     | '/api/public/password-reset'
     | '/api/public/resend-activation'
-    | '/api/public/seed-admin'
-    | '/api/public/seed-tenant'
     | '/api/public/signup'
   fileRoutesById: FileRoutesById
 }
@@ -325,8 +301,6 @@ export interface RootRouteChildren {
   PropertyIdRoute: typeof PropertyIdRoute
   ApiPublicPasswordResetRoute: typeof ApiPublicPasswordResetRoute
   ApiPublicResendActivationRoute: typeof ApiPublicResendActivationRoute
-  ApiPublicSeedAdminRoute: typeof ApiPublicSeedAdminRoute
-  ApiPublicSeedTenantRoute: typeof ApiPublicSeedTenantRoute
   ApiPublicSignupRoute: typeof ApiPublicSignupRoute
 }
 
@@ -465,20 +439,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/seed-tenant': {
-      id: '/api/public/seed-tenant'
-      path: '/api/public/seed-tenant'
-      fullPath: '/api/public/seed-tenant'
-      preLoaderRoute: typeof ApiPublicSeedTenantRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/seed-admin': {
-      id: '/api/public/seed-admin'
-      path: '/api/public/seed-admin'
-      fullPath: '/api/public/seed-admin'
-      preLoaderRoute: typeof ApiPublicSeedAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/resend-activation': {
       id: '/api/public/resend-activation'
       path: '/api/public/resend-activation'
@@ -517,8 +477,6 @@ const rootRouteChildren: RootRouteChildren = {
   PropertyIdRoute: PropertyIdRoute,
   ApiPublicPasswordResetRoute: ApiPublicPasswordResetRoute,
   ApiPublicResendActivationRoute: ApiPublicResendActivationRoute,
-  ApiPublicSeedAdminRoute: ApiPublicSeedAdminRoute,
-  ApiPublicSeedTenantRoute: ApiPublicSeedTenantRoute,
   ApiPublicSignupRoute: ApiPublicSignupRoute,
 }
 export const routeTree = rootRouteImport

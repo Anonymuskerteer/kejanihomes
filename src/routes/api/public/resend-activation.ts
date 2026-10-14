@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safeOrigin } from "@/lib/safe-origin";
 
 // POST /api/public/resend-activation { email }
 // Re-sends a 6-digit activation code to an account that hasn't been activated yet. Always returns ok.
@@ -10,7 +11,7 @@ export const Route = createFileRoute("/api/public/resend-activation")({
           const b = (await request.json().catch(() => ({}))) as { email?: string };
           const email = (b.email ?? "").trim().toLowerCase();
           if (!/^[^\s@,()]+@[^\s@,()]+\.[^\s@,()]+$/.test(email)) return Response.json({ ok: true });
-          const origin = new URL(request.url).origin;
+          const origin = safeOrigin(request.url);
 
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: prof } = await supabaseAdmin.from("profiles").select("id, full_name").ilike("email", email).maybeSingle();

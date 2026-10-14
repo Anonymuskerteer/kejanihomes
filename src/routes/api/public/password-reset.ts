@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safeOrigin } from "@/lib/safe-origin";
 
 // POST /api/public/password-reset  { email }
 // Emails a one-time recovery link that opens /reset-password.
@@ -70,7 +71,7 @@ export const Route = createFileRoute("/api/public/password-reset")({
               },
             });
 
-            const resetLink = `${new URL(request.url).origin}/reset-password?token_hash=${encodeURIComponent(tokenHash)}`;
+            const resetLink = `${safeOrigin(request.url)}/reset-password?token_hash=${encodeURIComponent(tokenHash)}`;
             const html = `
               <div style="font-family:Arial,sans-serif;background:#fff;padding:32px;max-width:560px;margin:0 auto">
                 <h1 style="color:#317E3D;font-size:22px;margin:0 0 12px">Reset your password</h1>

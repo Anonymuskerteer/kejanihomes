@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/site-header";
+import { waDigits } from "@/lib/phone";
 import { SiteFooter } from "@/components/site-footer";
 import { PropertyMap } from "@/components/property-map";
 import { ReviewForm } from "@/components/review-form";
@@ -244,12 +245,19 @@ function PropertyDetail() {
                       <Phone className="h-4 w-4" /> {property.contact_phone}
                     </a>
                   )}
-                  {property.contact_email && (
-                    <a href={`mailto:${property.contact_email}`} className="flex items-center gap-2 rounded-lg border border-border px-3 py-2.5 hover:bg-secondary">
-                      <Mail className="h-4 w-4" /> {property.contact_email}
+                  {waDigits(property.contact_phone) && (
+                    <a
+                      href={`https://wa.me/${waDigits(property.contact_phone)}?text=${encodeURIComponent(
+                        `Hi, I'm interested in the following listing, is it available? ${property.title} ${typeof window !== "undefined" ? window.location.href : ""}`,
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg border border-primary px-3 py-2.5 font-medium text-primary hover:bg-primary-soft"
+                    >
+                      <MessageCircle className="h-4 w-4" /> Chat on WhatsApp
                     </a>
                   )}
-                  {!property.contact_phone && !property.contact_email && (
+                  {!property.contact_phone && (
                     <p className="text-xs text-muted-foreground">No contact details provided.</p>
                   )}
                 </div>

@@ -50,6 +50,13 @@
       "when": 1791966923237,
       "tag": "0006_protect_approval_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791977749924,
+      "tag": "0007_phone_canonical_unique",
+      "breakpoints": true
     }
   ]
 }

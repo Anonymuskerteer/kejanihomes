@@ -417,6 +417,7 @@ export type Database = {
         Args: { _conv: string; _user: string }
         Returns: boolean
       }
+      normalize_ke_phone: { Args: { p: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "landlord" | "tenant"

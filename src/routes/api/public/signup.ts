@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { safeOrigin } from "@/lib/safe-origin";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/api/public/signup")({
           const full_name = (b.full_name ?? "").trim().slice(0, 100);
           const phone = (b.phone ?? "").replace(/\s/g, "");
           const role = b.role === "landlord" ? "landlord" : "tenant";
-          const origin = new URL(request.url).origin;
+          const origin = safeOrigin(request.url);
           if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(email))
             return fail("Please use a valid Gmail or Yahoo email address.");
           if (password.length < 6 || password.length > 72) return fail("Password must be 6–72 characters.");
@@ -55,7 +56,7 @@ export const Route = createFileRoute("/api/public/signup")({
               console.error("[signup] registration eligibility check failed:", bansError);
               return fail("Unable to validate registration right now. Please try again.", 503);
             }
-            if (bans && bans.length) return fail("This email or phone number is not allowed to register. Contact support.", 403);
+            if (bans && bans.length) return fail("This phone number or email can't be used to register. Try different details or contact support.", 409);
             const { data: phoneOwners, error: phoneError } = await supabaseAdmin
               .from("profiles")
               .select("id, phone")
@@ -67,7 +68,7 @@ export const Route = createFileRoute("/api/public/signup")({
             const taken = (phoneOwners ?? []).some(
               (p) => (p.phone ?? "").replace(/\s/g, "").replace(/^(\+?254|0)/, "") === normPhone,
             );
-            if (taken) return fail("This phone number is already registered to another account.", 409);
+            if (taken) return fail("This phone number or email can't be used to register. Try different details or contact support.", 409);
           }
 
           const supabasePublic = createClient<Database>(supabaseUrl!, publishableKey!, {

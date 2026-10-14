@@ -12,17 +12,19 @@ export const Route = createFileRoute("/api/public/signup")({
         const fail = (error: string, status = 400) => Response.json({ ok: false, error }, { status });
         try {
           const b = (await request.json().catch(() => ({}))) as Record<string, string | undefined>;
-          const email = (b.email ?? "").trim().toLowerCase();
+          const rawEmail = (b.email ?? "").trim().toLowerCase();
           const password = b.password ?? "";
           const full_name = (b.full_name ?? "").trim().slice(0, 100);
-          const phone = (b.phone ?? "").replace(/\s/g, "");
+          const phoneE164 = normalizeKePhone(b.phone);
           const role = b.role === "landlord" ? "landlord" : "tenant";
           const origin = safeOrigin(request.url);
-          if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(email))
-            return fail("Please use a valid Gmail or Yahoo email address.");
+          if (!phoneE164) return fail("Enter a valid Kenyan number (07…, 010…, 011… or +254…).");
+          const phone = phoneE164;
+          if (rawEmail && !/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(rawEmail))
+            return fail("Please use a valid Gmail or Yahoo email address, or leave email empty.");
+          const email = rawEmail || phoneAuthEmail(phoneE164);
           if (password.length < 6 || password.length > 72) return fail("Password must be 6–72 characters.");
           if (!full_name) return fail("Full name is required.");
-          if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
 
           const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
           const publishableKey =
@@ -58,59 +60,49 @@ export const Route = createFileRoute("/api/public/signup")({
             }
             if (bans && bans.length) return fail("This phone number or email can't be used to register. Try different details or contact support.", 409);
             const { data: phoneOwners, error: phoneError } = await supabaseAdmin
-              .from("profiles")
-              .select("id, phone")
-              .ilike("phone", `%${normPhone}`);
+              .from("profiles").select("id").eq("phone", phone).limit(1);
             if (phoneError) {
               console.error("[signup] phone uniqueness check failed:", phoneError);
               return fail("Unable to validate registration right now. Please try again.", 503);
             }
-            const taken = (phoneOwners ?? []).some(
-              (p) => (p.phone ?? "").replace(/\s/g, "").replace(/^(\+?254|0)/, "") === normPhone,
-            );
-            if (taken) return fail("This phone number or email can't be used to register. Try different details or contact support.", 409);
+            if (phoneOwners?.length) return fail("This phone number is already registered. Sign in instead or contact support.", 409);
           }
 
-          const supabasePublic = createClient<Database>(supabaseUrl!, publishableKey!, {
-            auth: { persistSession: false, autoRefreshToken: false },
-          });
-          const { data: signup, error } = await supabasePublic.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { full_name, phone, role },
-              emailRedirectTo: `${origin}/activate`,
-            },
-          });
-          if (error) {
-            if (
-              error.code === "email_exists" ||
-              error.code === "user_already_exists" ||
-              /already registered|already exists/i.test(error.message)
-            ) {
-              return Response.json(
-                {
-                  ok: false,
-                  code: "EMAIL_ALREADY_REGISTERED",
-                  error: "This email is already registered. Sign in or reset your password.",
-                },
-                { status: 409 },
-              );
-            }
-            console.error("[signup] Supabase Auth rejected registration:", error);
-            return fail(error.message);
-          }
-          if (signup.user?.identities?.length === 0) {
-            return Response.json(
-              {
-                ok: false,
-                code: "EMAIL_ALREADY_REGISTERED",
-                error: "This email is already registered. Sign in or reset your password.",
-              },
+          const alreadyRegistered = () =>
+            Response.json(
+              { ok: false, code: "EMAIL_ALREADY_REGISTERED", error: "This email or phone is already registered. Sign in or reset your password." },
               { status: 409 },
             );
+          let confirmationRequired = false;
+          if (process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+            const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
+              email, password, email_confirm: true, user_metadata: { full_name, phone, role },
+            });
+            if (error) {
+              if (/already|exists|PHONE_TAKEN|duplicate/i.test(error.message)) return alreadyRegistered();
+              console.error("[signup] createUser failed:", error);
+              return fail("Could not create account. Please try again.", 502);
+            }
+            if (!created.user) return fail("Could not create account. Please try again.", 502);
+          } else {
+            const supabasePublic = createClient<Database>(supabaseUrl!, publishableKey!, {
+              auth: { persistSession: false, autoRefreshToken: false },
+            });
+            const { data: signup, error } = await supabasePublic.auth.signUp({
+              email, password,
+              options: { data: { full_name, phone, role }, emailRedirectTo: `${origin}/activate` },
+            });
+            if (error) {
+              if (error.code === "email_exists" || error.code === "user_already_exists" || /already|PHONE_TAKEN/i.test(error.message))
+                return alreadyRegistered();
+              console.error("[signup] registration rejected:", error);
+              return fail(error.message);
+            }
+            if (signup.user?.identities?.length === 0) return alreadyRegistered();
+            if (!signup.user) return fail("Could not create account. Please try again.", 502);
+            confirmationRequired = !signup.session;
           }
-          if (!signup.user) return fail("Could not create account. Please try again.", 502);
 
           const safeName = full_name.replace(/[<>&"]/g, "");
           const html = `

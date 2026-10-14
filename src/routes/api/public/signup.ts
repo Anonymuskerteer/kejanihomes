@@ -12,17 +12,19 @@ export const Route = createFileRoute("/api/public/signup")({
         const fail = (error: string, status = 400) => Response.json({ ok: false, error }, { status });
         try {
           const b = (await request.json().catch(() => ({}))) as Record<string, string | undefined>;
-          const email = (b.email ?? "").trim().toLowerCase();
+          const rawEmail = (b.email ?? "").trim().toLowerCase();
           const password = b.password ?? "";
           const full_name = (b.full_name ?? "").trim().slice(0, 100);
-          const phone = (b.phone ?? "").replace(/\s/g, "");
+          const phoneE164 = normalizeKePhone(b.phone);
           const role = b.role === "landlord" ? "landlord" : "tenant";
           const origin = safeOrigin(request.url);
-          if (!/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(email))
-            return fail("Please use a valid Gmail or Yahoo email address.");
+          if (!phoneE164) return fail("Enter a valid Kenyan number (07…, 010…, 011… or +254…).");
+          const phone = phoneE164;
+          if (rawEmail && !/^[a-z0-9._%+-]+@(gmail\.com|googlemail\.com|yahoo\.com|yahoo\.co\.[a-z]{2}|ymail\.com)$/.test(rawEmail))
+            return fail("Please use a valid Gmail or Yahoo email address, or leave email empty.");
+          const email = rawEmail || phoneAuthEmail(phoneE164);
           if (password.length < 6 || password.length > 72) return fail("Password must be 6–72 characters.");
           if (!full_name) return fail("Full name is required.");
-          if (!/^(\+?254|0)[17]\d{8}$/.test(phone)) return fail("A valid phone number is required.");
 
           const supabaseUrl = process.env.SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL;
           const publishableKey =
